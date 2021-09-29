@@ -38,9 +38,12 @@ additional_links:
 - title: Lattes
   icon: fas fa-robot (https://fontawesome.com/icons?d=gallery&s=brands&m=free)
   url: http://lattes.cnpq.br/9993195769355172
-# - title: another link
-#   icon: font awesome brand icon name (eg. fab fa-twitter) (https://fontawesome.com/icons?d=gallery&s=brands&m=free)
-#   url: Link url (eg. https://google.com)
+- title: Research Gate
+  icon: fab fa-researchgate
+  url: https://www.researchgate.net/profile/Bruno-Grisci
+- title: Google Scholar
+  icon: fab fa-google
+  url: https://scholar.google.com/citations?user=Z08x0NUAAAAJ&hl=en
 
 # Google Analytics and Tag Manager
 # Using more than one of these may cause issues with reporting
