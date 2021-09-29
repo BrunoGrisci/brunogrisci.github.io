@@ -1,6 +1,6 @@
 # Site
 repository: BrunoGrisci/brunogrisci.github.io
-favicon: images/favicon.ico
+# favicon: images/favicon.ico
 
 # Content configuration version
 version: 2
@@ -58,10 +58,9 @@ about_content: | # this will include new lines to allow paragraphs
  #   - Tables
  #   - <a href="google.com">Links</a>
  #   - Images ![alt text](/images/landscape-trees.jpg "Trees")
-
-I am a Computer Science PhD student in the Artificial Intelligence field, at Universidade Federal do Rio Grande do Sul (UFRGS), Brazil, with MSc and BSc in Computer Science at the same institution and three study abroad periods at the University of Birmingham (BSc), the Universidad de Santiago de Chile (USACH) (MSc), and the Karlsruher Institut für Technologie (KIT) (PhD). 
-My main research focus is on Machine Learning, Bioinformatics, and Evolutionary Computation. 
-Outside the academia, I have experience as freelancer journalist and writer.
+ I am a Computer Science PhD student in the Artificial Intelligence field, at Universidade Federal do Rio Grande do Sul (UFRGS), Brazil, with MSc and BSc in Computer Science at the same institution and three study abroad periods at the University of Birmingham (BSc), the Universidad de Santiago de Chile (USACH) (MSc), and the Karlsruher Institut für Technologie (KIT) (PhD). 
+ My main research focus is on Machine Learning, Bioinformatics, and Evolutionary Computation. 
+ Outside the academia, I have experience as freelancer journalist and writer.
 
 content:
   - title: Projects # Title for the section
