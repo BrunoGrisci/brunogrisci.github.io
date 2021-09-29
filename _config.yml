@@ -1,12 +1,12 @@
 # Site
 repository: BrunoGrisci/brunogrisci.github.io
-# favicon: images/favicon.ico
+favicon: fas fa-robot
 
 # Content configuration version
 version: 2
 
 # Personal info
-name: Bruno Grisci
+name: Bruno Iochins Grisci
 title: PhD student in Computer Science
 email: bigrisci@inf.ufrgs.br
 # email_title: Email (Email title override)
@@ -29,15 +29,15 @@ instagram_username: bigrisci
 linkedin_username: bruno-iochins-grisci
 #xing_username: jekyll
 #pinterest_username: jekyll
-youtube_username: Bruno Grisci
+youtube_username: UCzskNJU6CgEim2AqWY7f93w
 #googleplus_username: +jekyll
 orcid_username: 0000-0003-4083-5881
 
 # Additional icon links
 additional_links:
-- title: Link name
-  icon: Font Awesome brand icon name (eg. fab fa-twitter) (https://fontawesome.com/icons?d=gallery&s=brands&m=free)
-  url: Link url (eg. https://google.com)
+- title: Lattes
+  icon: fas fa-robot (https://fontawesome.com/icons?d=gallery&s=brands&m=free)
+  url: http://lattes.cnpq.br/9993195769355172
 # - title: another link
 #   icon: font awesome brand icon name (eg. fab fa-twitter) (https://fontawesome.com/icons?d=gallery&s=brands&m=free)
 #   url: Link url (eg. https://google.com)
@@ -51,13 +51,13 @@ additional_links:
 # About Section
 # about_title: About Me (Use this to override about section title)
 about_profile_image: images/bruno.jpg
+# Write an awesome description about yourself here, this supports markdown, so you can add [links](http://foobar.com) and highlight things <mark>like this</mark>.#
+# You can even add paragraphs by using empty lines like this and add anything else [markdown](https://www.markdownguide.org/getting-started#what-is-markdown) supports such as
+#   - Lists
+#   - Tables
+#   - <a href="google.com">Links</a>
+#   - Images ![alt text](/images/landscape-trees.jpg "Trees")
 about_content: | # this will include new lines to allow paragraphs
- # Write an awesome description about yourself here, this supports markdown, so you can add [links](http://foobar.com) and highlight things <mark>like this</mark>.#
- # You can even add paragraphs by using empty lines like this and add anything else [markdown](https://www.markdownguide.org/getting-started#what-is-markdown) supports such as
- #   - Lists
- #   - Tables
- #   - <a href="google.com">Links</a>
- #   - Images ![alt text](/images/landscape-trees.jpg "Trees")
  I am a Computer Science PhD student in the Artificial Intelligence field, at Universidade Federal do Rio Grande do Sul (UFRGS), Brazil, with MSc and BSc in Computer Science at the same institution and three study abroad periods at the University of Birmingham (BSc), the Universidad de Santiago de Chile (USACH) (MSc), and the Karlsruher Institut für Technologie (KIT) (PhD). 
  My main research focus is on Machine Learning, Bioinformatics, and Evolutionary Computation. 
  Outside the academia, I have experience as freelancer journalist and writer.
