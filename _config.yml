@@ -34,9 +34,10 @@ youtube_username: channel/UCzskNJU6CgEim2AqWY7f93w
 orcid_username: 0000-0003-4083-5881
 
 # Additional icon links
+# https://fontawesome.com/icons?d=gallery&s=brands&m=free
 additional_links:
 - title: Lattes
-  icon: fas fa-robot (https://fontawesome.com/icons?d=gallery&s=brands&m=free)
+  icon: images/lattes-icon.png
   url: http://lattes.cnpq.br/9993195769355172
 - title: Research Gate
   icon: fab fa-researchgate
