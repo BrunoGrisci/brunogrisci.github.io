@@ -1,37 +1,37 @@
 # Site
 repository: BrunoGrisci/brunogrisci.github.io
-# favicon: Directory of your favicon (eg. images/favicon.ico)(optional)
+favicon: images/favicon.ico
 
 # Content configuration version
 version: 2
 
 # Personal info
 name: Bruno Grisci
-title: Your job title
-email: Your email (optional)
+title: PhD student in Computer Science
+email: bigrisci@inf.ufrgs.br
 # email_title: Email (Email title override)
-phone: Your phone number (optional)
+# phone: Your phone number (optional)
 # phone_title: Phone (Phone title override)
-website: Your website (eg. https://google.com)(optional)
+website: https://brunogrisci.github.io/
 # website_title: Web (Website title override)
 
 # Dark Mode (true/false/never)
 darkmode: false
 
 # Social links
-twitter_username: jekyllrb
-github_username:  jekyll
-stackoverflow_username: "00000001"
-dribbble_username: jekyll
-facebook_username: jekyll
-flickr_username: jekyll
-instagram_username: jekyll
-linkedin_username: jekyll
-xing_username: jekyll
-pinterest_username: jekyll
-youtube_username: jekyll
-googleplus_username: +jekyll
-orcid_username: 0000-0000-0000-0000
+twitter_username: brunogrisci
+github_username:  BrunoGrisci
+#stackoverflow_username: "00000001"
+#dribbble_username: jekyll
+#facebook_username: jekyll
+#flickr_username: jekyll
+instagram_username: bigrisci
+linkedin_username: bruno-iochins-grisci
+#xing_username: jekyll
+#pinterest_username: jekyll
+youtube_username: Bruno Grisci
+#googleplus_username: +jekyll
+orcid_username: 0000-0003-4083-5881
 
 # Additional icon links
 additional_links:
@@ -50,15 +50,18 @@ additional_links:
 
 # About Section
 # about_title: About Me (Use this to override about section title)
-about_profile_image: Directory of profile image (eg. images/profile.jpg)
+about_profile_image: images/bruno.jpg
 about_content: | # this will include new lines to allow paragraphs
-  Write an awesome description about yourself here, this supports markdown, so you can add [links](http://foobar.com) and highlight things <mark>like this</mark>.
+ # Write an awesome description about yourself here, this supports markdown, so you can add [links](http://foobar.com) and highlight things <mark>like this</mark>.#
+ # You can even add paragraphs by using empty lines like this and add anything else [markdown](https://www.markdownguide.org/getting-started#what-is-markdown) supports such as
+ #   - Lists
+ #   - Tables
+ #   - <a href="google.com">Links</a>
+ #   - Images ![alt text](/images/landscape-trees.jpg "Trees")
 
-  You can even add paragraphs by using empty lines like this and add anything else [markdown](https://www.markdownguide.org/getting-started#what-is-markdown) supports such as
-    - Lists
-    - Tables
-    - <a href="google.com">Links</a>
-    - Images ![alt text](/images/landscape-trees.jpg "Trees")
+I am a Computer Science PhD student in the Artificial Intelligence field, at Universidade Federal do Rio Grande do Sul (UFRGS), Brazil, with MSc and BSc in Computer Science at the same institution and three study abroad periods at the University of Birmingham (BSc), the Universidad de Santiago de Chile (USACH) (MSc), and the Karlsruher Institut für Technologie (KIT) (PhD). 
+My main research focus is on Machine Learning, Bioinformatics, and Evolutionary Computation. 
+Outside the academia, I have experience as freelancer journalist and writer.
 
 content:
   - title: Projects # Title for the section
