@@ -1,12 +1,12 @@
 # Site
-repository: Git repository where your resume will be hosted, only required if you are hosting on GitHub (eg. sproogen/modern-resume-theme)
+repository: BrunoGrisci/brunogrisci.github.io
 # favicon: Directory of your favicon (eg. images/favicon.ico)(optional)
 
 # Content configuration version
 version: 2
 
 # Personal info
-name: Your Name
+name: Bruno Grisci
 title: Your job title
 email: Your email (optional)
 # email_title: Email (Email title override)
