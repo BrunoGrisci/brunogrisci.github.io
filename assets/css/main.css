@@ -195,7 +195,7 @@ input, select, textarea {
 
 	blockquote {
 		border-left: solid 8px #e4e4e4;
-		font-style: italic;
+		/*font-style: italic;*/
 		margin: 0 0 2.25em 0;
 		padding: 0.5em 0 0.5em 2em;
 	}
@@ -1711,6 +1711,30 @@ input, select, textarea {
 		max-width: calc(100% - 4.5em);
 		width: 45em;
 	}
+
+	.flex-container {
+	    display: flex;
+	}
+
+	.flex-child {
+	    flex: 1;
+	}  
+
+	.flex-child2 {
+	    flex: 5;
+	}  	
+
+	.flex-child:first-child {
+	    margin-right: 0px;
+	} 
+
+		.left {
+			width: 50%;
+		}
+
+		.right{
+			width: 50%;
+		}
 
 		.container.xsmall {
 			width: 11.25em;
