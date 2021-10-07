@@ -117,7 +117,7 @@ input, select, textarea {
 
 		a:hover {
 			border-bottom-color: transparent;
-			color: #65b39c !important;
+			color: #4acaa8 !important;
 		}
 
 	strong, b {
@@ -1809,7 +1809,7 @@ input, select, textarea {
 	}
 
 	header.major h2 {
-		color: #65b39c;
+		color: #4acaa8;
 		font-size: 3.5em;
 	}
 
@@ -1872,7 +1872,7 @@ input, select, textarea {
 		input[type="email"]:focus,
 		select:focus,
 		textarea:focus {
-			border-color: #65b39c;
+			border-color: #4acaa8;
 		}
 
 	select {
@@ -1977,7 +1977,7 @@ input, select, textarea {
 
 		input[type="checkbox"]:focus + label:before,
 		input[type="radio"]:focus + label:before {
-			border-color: #65b39c;
+			border-color: #4acaa8;
 		}
 
 	input[type="checkbox"] + label:before {
@@ -2426,7 +2426,7 @@ input, select, textarea {
 			}
 
 			ul.feature-icons li:before {
-				background: #65b39c;
+				background: #4acaa8;
 				border-radius: 100%;
 				color: #ffffff;
 				display: block;
@@ -2642,7 +2642,7 @@ input, select, textarea {
 		input[type="reset"].primary,
 		input[type="button"].primary,
 		.button.primary {
-			background-color: #65b39c;
+			background-color: #4acaa8;
 			color: #ffffff !important;
 		}
 
@@ -2724,7 +2724,7 @@ input, select, textarea {
 		-webkit-justify-content: space-between;
 		-ms-justify-content: space-between;
 		justify-content: space-between;
-		background: #65b39c;
+		background: #4acaa8;
 		color: #d2f2e9;
 		height: 100%;
 		overflow-y: auto;
@@ -2832,7 +2832,7 @@ input, select, textarea {
 
 						#header > nav ul li a.active {
 							background: #fff;
-							color: #65b39c !important;
+							color: #4acaa8 !important;
 						}
 
 					#header > nav ul li:first-child {
@@ -3100,7 +3100,7 @@ input, select, textarea {
 					}
 
 					#titleBar .toggle:before {
-						background: #65b39c;
+						background: #4acaa8;
 						color: #ffffff;
 						content: '\f0c9';
 						display: block;
@@ -3338,27 +3338,3 @@ input, select, textarea {
 			}
 
 	}
-
-	details {
-  user-select: none;
-}
-
-details>summary span.icon {
-  width: 24px;
-  height: 24px;
-  transition: all 0.3s;
-  margin-left: auto;
-}
-
-details[open] summary span.icon {
-  transform: rotate(180deg);
-}
-
-summary {
-  display: flex;
-  cursor: pointer;
-}
-
-summary::-webkit-details-marker {
-  display: none;
-}
