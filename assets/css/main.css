@@ -3342,7 +3342,7 @@ input, select, textarea {
 	}
 
 	details {
-  user-select: none;
+  user-select: 'text';
 }
 
 details>summary span.icon {
