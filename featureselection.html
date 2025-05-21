@@ -1,93 +1,233 @@
-Feature Selection
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Selection - Generative AI Academy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+        }
+        h1, h2, h3 {
+            color: #005A9C;
+        }
+        h1 {
+            border-bottom: 3px solid #005A9C;
+            padding-bottom: 10px;
+        }
+        h2 {
+            margin-top: 40px;
+        }
+        ul {
+            margin-left: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        .footer {
+            margin-top: 50px;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Feature Selection</h1>
+        <h2>Generative AI Academy</h2>
+        <h3>Prof. Bruno Iochins Grisci</h3>
+        <div class="contact">
+            Mail: <a href="mailto:bigrisci@inf.ufrgs.br">bigrisci@inf.ufrgs.br</a><br>
+            Site: <a href="https://brunogrisci.github.io/" target="_blank">https://brunogrisci.github.io/</a>
+        </div>
 
-Generative AI Academy
+        <h2>Course Materials</h2>
 
-Prof. Bruno Iochins Grisci
+        <h2>Course Outline</h2>
 
-COURSE OUTLINE
+        <h3>PART 1: Feature Selection Algorithms</h3>
+        <ul>
+            <li>What is a feature?</li>
+            <li>What is Feature Selection?</li>
+            <li>Dimensionality Reduction: Feature Selection vs Feature Extraction</li>
+            <li>Why Feature Selection? Accuracy, Memory, Interpretability</li>
+            <li>Features: Relevant, Redundant, Irrelevant</li>
+            <li>Representation: Weights, Scores, and Subsets</li>
+            <li>Theoretical Background
+                <ul>
+                    <li>Statistics</li>
+                    <li>Information Theory</li>
+                    <li>Metaheuristics</li>
+                    <li>Supervised Learning</li>
+                </ul>
+            </li>
+            <li>Properties
+                <ul>
+                    <li>Filter</li>
+                    <li>Wrapper</li>
+                    <li>Embedded</li>
+                    <li>Hybrid</li>
+                    <li>Ensemble</li>
+                    <li>Univariate or Multivariate</li>
+                    <li>Search Direction</li>
+                </ul>
+            </li>
+            <li>Algorithms
+                <ul>
+                    <li>Kruskal-Wallis Filter</li>
+                    <li>Mutual Information Filter</li>
+                    <li>mRMR</li>
+                    <li>ReliefF</li>
+                    <li>SVM-RFE</li>
+                    <li>SVM + Genetic Algorithm</li>
+                    <li>Lasso</li>
+                    <li>Decision Tree</li>
+                    <li>Random Forest</li>
+                </ul>
+            </li>
+        </ul>
 
-PART 1: Feature Selection Algorithms
+        <h3>PART 2: Benchmark Datasets</h3>
+        <ul>
+            <li>Why Tabular Data?</li>
+            <li>XOR</li>
+            <li>Synthetic Data</li>
+            <li>UCI Machine Learning Repository</li>
+            <li>CuMiDa</li>
+            <li>Being Cautious with Datasets</li>
+        </ul>
 
-    1. What is a feature? (coluna tabela)
-    2. What is Feature Selection?
-    3. Dimensionality reduction: Feature Selection x Feature Extraction
-    4. Why Feature Selection? Accuracy, memory, and interpretability
-    5. Features: relevant, redundant, irrelevant
-    6. Representation: Weights, scores, and subsets
-    7. Theoretical Background
-       - Statistics
-       - Information theory
-       - Metaheuristics
-       - Supervised learning
-    8. Properties
-       - Filter
-       - Wrapper
-       - Embedded
-       - Hybrid
-       - Ensemble
-       - Univariate or Multivariate
-       - Search direction
-    9. Algorithms 
-      - Kruskal Wallis Filter
-      - Mutual Information Filter
-      - mRMR
-      - ReliefF
-      - SVM-RFE
-      - SVM and Genetic Algorithm
-      - Lasso
-      - Decision Tree
-      - Random Forest
+        <h3>PART 3: Evaluation and Visualization of Feature Selection</h3>
+        <ul>
+            <li>Selection Accuracy
+                <ul>
+                    <li>Percentage of Informative Features Selected</li>
+                    <li>Percentage of Selected Features that are Informative</li>
+                </ul>
+            </li>
+            <li>Predictive Power</li>
+            <li>Redundancy</li>
+            <li>Stability and Reliability
+                <ul>
+                    <li>Bootstrap and Sample Subsets</li>
+                    <li>Properties of Stability Measures</li>
+                    <li>Kuncheva Index</li>
+                    <li>Jaccard Index</li>
+                    <li>Hamming Index</li>
+                    <li>Ochiai Index</li>
+                    <li>Dice Index</li>
+                    <li>Percentage of Overlapping Features</li>
+                    <li>Canberra Distance</li>
+                    <li>Spearman's Rank Coefficient</li>
+                    <li>Pearson Correlation Coefficient</li>
+                </ul>
+            </li>
+            <li>Visualization
+                <ul>
+                    <li>Boxplot</li>
+                    <li>Correlation</li>
+                    <li>Heatmap</li>
+                    <li>t-SNE</li>
+                    <li>Weighted t-SNE</li>
+                    <li>Bump Chart</li>
+                    <li>Why Use Visualization?</li>
+                </ul>
+            </li>
+            <li>Time</li>
+        </ul>
 
-PART 2: Benchmark datasets
+        <h3>PART 4: Neural Networks and Feature Selection</h3>
+        <ul>
+            <li>Motivation</li>
+            <li>FS-NEAT</li>
+            <li>N3O</li>
+            <li>Relevance Aggregation</li>
+            <li>FS Layer</li>
+        </ul>
 
-    1. Why tabular data?
-    2. XOR
-    3. Synthetic data
-    4. UCI Machine Learning Repository
-    5. CuMiDa
-    6. Being cautius with datasets
+        <h2>Questions</h2>
+        <ul>
+            <li>Why might wrapper methods overfit?</li>
+            <li>How do filter methods impact interpretability?</li>
+            <li>What are the trade-offs between FS method families?</li>
+        </ul>
 
-PART 3: Evaluation and visualization of Feature Selection
+        <h2>Bibliography</h2>
+            <ul class="bibliography">
+            <li>
+                Barbieri, M. C., Grisci, B. I., & Dorn, M. (2024). 
+                <em>Analysis and comparison of feature selection methods towards performance and stability.</em> 
+                Expert Systems with Applications. 
+                <a href="https://doi.org/10.1016/j.eswa.2024.123667" target="_blank">
+                https://doi.org/10.1016/j.eswa.2024.123667</a>
+            </li>
+            <li>
+                Grisci, B. I., Krause, M. J., & Dorn, M. (2021). 
+                <em>Relevance aggregation for neural networks interpretability and knowledge discovery on tabular data.</em> 
+                Information Sciences, 559, 111-129. 
+                <a href="https://doi.org/10.1016/j.ins.2021.01.052" target="_blank">
+                https://doi.org/10.1016/j.ins.2021.01.052</a>
+            </li>
+            <li>
+                Grisci, B. I., Feltes, B. C., & Dorn, M. (2019). 
+                <em>Neuroevolution as a tool for microarray gene expression pattern identification in cancer research.</em> 
+                Journal of Biomedical Informatics, 89, 122-133. 
+                <a href="https://doi.org/10.1016/j.jbi.2018.11.013" target="_blank">
+                https://doi.org/10.1016/j.jbi.2018.11.013</a>
+            </li>
+            <li>
+                Feltes, B. C., et al. (2019). 
+                <em>CuMiDa: An extensively curated microarray database for benchmarking and testing of machine learning approaches in cancer research.</em> 
+                Journal of Computational Biology, 26(4), 376-386. 
+                <a href="https://doi.org/10.1089/cmb.2018.023" target="_blank">
+                https://doi.org/10.1089/cmb.2018.023</a>
+            </li>
+            <li>
+                Grisci, B. I., et al. (2024). 
+                <em>The use of gene expression datasets in feature selection research: 20 years of inherent bias?.</em> 
+                Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery, 14(2), e1523. 
+                <a href="https://doi.org/10.1002/widm.1523" target="_blank">
+                https://doi.org/10.1002/widm.1523</a>
+            </li>
+            <li>
+                Figueroa Barraza, J., López Droguett, E., & Ramos Martins, M. (2021).
+                <em>Towards interpretable deep learning: a feature selection framework for prognostics and health management using deep neural networks.</em>
+                Sensors, 21(17), 5888.
+                <a href="https://doi.org/10.3390/s21175888" target="_blank">
+                https://doi.org/10.3390/s21175888</a>
+            </li>            
+            <li>
+                Ang, J. C., et al. (2015). 
+                <em>Supervised, unsupervised, and semi-supervised feature selection: a review on gene selection.</em> 
+                IEEE/ACM Transactions on Computational Biology and Bioinformatics, 13(5), 971-989. 
+                <a href="https://doi.org/10.1109/TCBB.2015.2478454" target="_blank">
+                https://doi.org/10.1109/TCBB.2015.2478454</a>
+            </li>
+            <li>
+                Lazar, C., et al. (2012). 
+                <em>A survey on filter techniques for feature selection in gene expression microarray analysis.</em> 
+                IEEE/ACM Transactions on Computational Biology and Bioinformatics, 9(4), 1106-1119. 
+                <a href="https://doi.org/10.1109/TCBB.2012.33" target="_blank">
+                https://doi.org/10.1109/TCBB.2012.33</a>
+            </li>
+            <li>
+                Molnar, C. (2020). 
+                <em>Interpretable Machine Learning.</em> Lulu.com. 
+                <a href="https://christophm.github.io/interpretable-ml-book/" target="_blank">
+                https://christophm.github.io/interpretable-ml-book/</a>
+            </li>
+        </ul>
 
-    1. Selection accuracy
-       - Percentage of Informative Features Selected
-       - Percentage of Selected Features that are Informative
-    2. Predictive power
-    3. Redundancy
-    4. Stability and Reliability
-       - Bootstrap and sample subsets
-       - Properties of stability measure
-       - Kuncheva Index
-       - Jaccard Index
-       - Hamming Index
-       - Ochial Index
-       - Dice Index
-       - Percentage of Overlapping Features
-       - Canberra Distance
-       - Spearman's Rank Coefficient
-       - Pearson Correlation Coefficient
-    5. Visualization
-       - Boxplot
-       - Correlation
-       - Heatmap
-       - t-SNE
-       - Weighted t-SNE 
-       - Bump chart
-       - Why use visualization?
-    6. Time
+        <div class="footer">
+            <p>Generative AI Academy | Prof. Bruno Iochins Grisci</p>
+        </div>
+    </div>
+</body>
+</html>
 
-PART 4: Neural Networks and Feature Selection
-
-    1. Motivation
-    2. FS-NEAT
-    3. N3O
-    4. Relevance Aggregation
-    5. FS Layer
-
-QUESTIONS 
-
-Why might wrapper methods overfit?
-How do filter methods impact interpretability?
-What are the trade-offs between FS method families?
-
-BIBLIOGRAPHY
