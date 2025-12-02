@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TM → MPCP Dominoes</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 1.5rem;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    label {
+      font-weight: 600;
+    }
+    input[type="text"] {
+      padding: 0.25rem 0.5rem;
+      min-width: 12rem;
+    }
+    button {
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.4rem;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #f3f3f3;
+    }
+
+    #tmInfo, #status {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      white-space: pre-wrap;
+    }
+
+    .container {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .panel {
+      flex: 1 1 320px;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      min-height: 200px;
+    }
+
+    .panel h2 {
+      font-size: 1.0rem;
+      margin-top: 0;
+    }
+
+    .domino-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .step-group {
+      margin-bottom: 0.75rem;
+    }
+
+    .step-header {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .domino {
+      border: 1px solid #aaa;
+      border-radius: 0.4rem;
+      padding: 0.25rem 0.4rem;
+      width: 90px;
+      font-size: 0.75rem;
+      background: #fff;
+      box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: grab;
+      position: relative; /* for delete button */
+    }
+
+    .domino-top, .domino-bottom {
+      text-align: center;
+      padding: 0.1rem 0.15rem;
+      border-radius: 0.2rem;
+    }
+
+    .domino-top {
+      border-bottom: 1px solid #ccc;
+      background: #f8f8f8;
+    }
+
+    .domino-bottom {
+      background: #fdfdfd;
+    }
+
+    #workspace {
+      min-height: 160px;
+      border: 2px dashed #bbb;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    #workspace.dragover {
+      border-color: #4a90e2;
+      background: #f5f9ff;
+    }
+
+    #concatStrings {
+      margin-top: 0.75rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+
+    .equal {
+      color: green;
+      font-weight: bold;
+    }
+    .not-equal {
+      color: darkred;
+      font-weight: bold;
+    }
+
+    .small-note {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 0.25rem;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: -0.45rem;
+      right: -0.45rem;
+      border-radius: 50%;
+      border: 1px solid #ccc;
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      font-size: 0.7rem;
+      line-height: 14px;
+      text-align: center;
+      background: #f5f5f5;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #e6e6e6;
+    }
+
+    /* Color coding per step */
+    .domino.step-1 { border-color: #1f77b4; }
+    .domino.step-1 .domino-top { background: #e8f1fb; }
+
+    .domino.step-2 { border-color: #ff7f0e; }
+    .domino.step-2 .domino-top { background: #ffe9d5; }
+
+    .domino.step-3 { border-color: #2ca02c; }
+    .domino.step-3 .domino-top { background: #e4f4e4; }
+
+    .domino.step-4 { border-color: #d62728; }
+    .domino.step-4 .domino-top { background: #fbe4e4; }
+
+    .domino.step-5 { border-color: #9467bd; }
+    .domino.step-5 .domino-top { background: #efe6fb; }
+
+    .domino.step-6 { border-color: #8c564b; }
+    .domino.step-6 .domino-top { background: #f3e9e6; }
+
+    .domino.step-7 { border-color: #17becf; }
+    .domino.step-7 .domino-top { background: #e5f6f8; }
+  </style>
+</head>
+<body>
+
+<h1>TM → MPCP Domino Generator</h1>
+
+<div style="margin: 0.6rem 0 1.2rem 0; font-size:0.85rem; line-height:1.35;">
+  <strong>Developed by:</strong> Prof. Bruno Iochins Grisci<br>
+  Departamento de Informática Teórica<br>
+  Instituto de Informática — Universidade Federal do Rio Grande do Sul (UFRGS).<br>
+  Website: <a href="https://brunogrisci.github.io/" target="_blank">https://brunogrisci.github.io/</a>
+  <br><br>
+  <strong>Based and inspired by the class of Prof. Rodrigo Machado:</strong><br>
+  <a href="https://www.youtube.com/watch?v=u66FlodaBf4&list=PLLUEUvJhgJJCC76AYWdWH-GcOS2BogpEN&index=27"
+     target="_blank">
+     https://www.youtube.com/watch?v=u66FlodaBf4&list=PLLUEUvJhgJJCC76AYWdWH-GcOS2BogpEN&index=27
+  </a>
+</div>
+
+
+<div class="row">
+  <div>
+    <label for="mtFile">.mt file: </label>
+    <input type="file" id="mtFile" accept=".mt">
+  </div>
+  <div>
+    <label for="inputWord">Input word w: </label>
+    <input type="text" id="inputWord" placeholder="e.g., ()">
+  </div>
+  <div>
+    <button id="generateBtn">Generate dominoes</button>
+  </div>
+</div>
+
+<div id="tmInfo"></div>
+<div id="status"></div>
+
+<div class="container">
+  <div class="panel">
+    <h2>Domino palette</h2>
+    <div class="small-note">
+      Dominoes are grouped and color-coded by construction step (1–7). Drag tiles into the workspace.
+    </div>
+    <div id="dominoPalette"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Workspace (sequence of dominoes)</h2>
+    <div class="small-note">
+      Drop tiles here in order. You can reorder or delete individual tiles. Colors still indicate the step.
+    </div>
+    <div id="workspace"></div>
+    <button id="clearWorkspaceBtn" style="margin-top:0.5rem;">Clear workspace</button>
+    <div id="concatStrings"></div>
+  </div>
+</div>
+
+<script>
+  // Global state
+  let currentTM = null;
+  let currentDominoes = [];
+
+  function showStatus(msg, isError=false) {
+    const st = document.getElementById('status');
+    st.textContent = msg || '';
+    st.style.color = isError ? 'darkred' : '#333';
+  }
+
+  function parseMt(content) {
+    const lines = content
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
+
+    if (lines.length < 7) {
+      throw new Error("Unexpected .mt format: not enough lines.");
+    }
+
+    const alphabetLine = lines[0];
+    const markerSymbol = lines[1];
+    const blankSymbol  = lines[2];
+    const statesLine   = lines[3];
+    const initialState = lines[4];
+    const acceptState  = lines[5];
+    const transitionsLine = lines[6];
+
+    const alphabet = alphabetLine.split(",").map(s => s.trim()).filter(s => s.length > 0);
+    const states   = statesLine.split(",").map(s => s.trim()).filter(s => s.length > 0);
+
+    const transitions = [];
+    const parts = transitionsLine.split(",,,").map(s => s.trim()).filter(s => s.length > 0);
+    for (const part of parts) {
+      const f = part.split(",").map(s => s.trim());
+      if (f.length < 5) continue;
+      let q, a, q2, b, dir;
+      if (f.length === 6 && f[2] === "") {
+        [q, a, , q2, b, dir] = f;
+      } else if (f.length === 5) {
+        [q, a, q2, b, dir] = f;
+      } else {
+        q   = f[0];
+        a   = f[1];
+        q2  = f[f.length - 3];
+        b   = f[f.length - 2];
+        dir = f[f.length - 1];
+      }
+      transitions.push({q, a, q2, b, dir});
+    }
+
+    let rejectState = states.find(s => s === 'qR') || null;
+
+    return {
+      alphabet,
+      markerSymbol,
+      blankSymbol,
+      states,
+      initialState,
+      acceptState,
+      rejectState,
+      transitions
+    };
+  }
+
+  function tokenizeWord(w) {
+    // Currently: each char is a symbol (except spaces)
+    return w.split("").filter(ch => ch !== " ");
+  }
+
+  function buildSymbolSet(tm, inputTokens) {
+    const S = new Set();
+    for (const a of tm.alphabet) S.add(a);
+    S.add(tm.markerSymbol);
+    S.add(tm.blankSymbol);
+    for (const tr of tm.transitions) {
+      if (tr.a) S.add(tr.a);
+      if (tr.b) S.add(tr.b);
+    }
+    for (const t of inputTokens) S.add(t);
+    return Array.from(S);
+  }
+
+  // Domino: { top: [tokens], bottom: [tokens], info: string, step: 1..7 }
+  function buildDominoes(tm, inputWord) {
+    const wTokens = tokenizeWord(inputWord);
+    const S = buildSymbolSet(tm, wTokens);
+    const q0 = tm.initialState;
+    const qA = tm.acceptState;
+    const qR = tm.rejectState;
+    const dominos = [];
+    const HASH = "#";
+
+    function addDomino(topTokens, bottomTokens, info, step) {
+      dominos.push({
+        top: topTokens.slice(),
+        bottom: bottomTokens.slice(),
+        info: info || "",
+        step: step
+      });
+    }
+
+    // 1) Initial piece: # / # q0 © w #
+    addDomino(
+      [HASH],
+      [HASH, q0, tm.markerSymbol, ...wTokens, HASH],
+      "Step 1: initial configuration",
+      1
+    );
+
+    // 2) Right moves
+    for (const tr of tm.transitions) {
+      const {q, a, q2, b, dir} = tr;
+      if (!a || !b || !q || !q2) continue;
+      if (q === qA || (qR && q === qR)) continue;
+      if (dir === "D") {
+        addDomino(
+          [q, a],
+          [b, q2],
+          "Step 2: right move q,a → (q',b,D)",
+          2
+        );
+      }
+    }
+
+    // 3) Left moves
+    for (const tr of tm.transitions) {
+      const {q, a, q2, b, dir} = tr;
+      if (!a || !b || !q || !q2) continue;
+      if (q === qA || (qR && q === qR)) continue;
+      if (dir === "E") {
+        for (const c of S) {
+          addDomino(
+            [c, q, a],
+            [q2, c, b],
+            "Step 3: left move q,a → (q',b,E)",
+            3
+          );
+        }
+      }
+    }
+
+    // 4) Copying tiles
+    for (const a of S) {
+      addDomino(
+        [a],
+        [a],
+        "Step 4: copy symbol " + a,
+        4
+      );
+    }
+
+    // 5) #/# and #/β#
+    addDomino([HASH], [HASH], "Step 5: boundary #/#", 5);
+    addDomino([HASH], [tm.blankSymbol, HASH], "Step 5: boundary #/β#", 5);
+
+    // 6) a qA / qA and qA a / qA
+    for (const a of S) {
+      addDomino([a, qA], [qA], "Step 6: collapse a qA → qA", 6);
+      addDomino([qA, a], [qA], "Step 6: collapse qA a → qA", 6);
+    }
+
+    // 7) qA ## / #
+    addDomino([qA, HASH, HASH], [HASH], "Step 7: final cleanup qA##/#", 7);
+
+    return dominos;
+  }
+
+  function renderTMInfo(tm) {
+    const div = document.getElementById('tmInfo');
+    if (!tm) {
+      div.textContent = "";
+      return;
+    }
+    const text =
+      "Parsed Turing Machine:\n" +
+      "  Alphabet (Σ-ish): " + tm.alphabet.join(", ") + "\n" +
+      "  Marker (©): " + tm.markerSymbol + "\n" +
+      "  Blank (β): " + tm.blankSymbol + "\n" +
+      "  States (Q): " + tm.states.join(", ") + "\n" +
+      "  Initial state (q0): " + tm.initialState + "\n" +
+      "  Accept state (qA): " + tm.acceptState + "\n" +
+      "  Reject state (qR): " + (tm.rejectState || "None") + "\n" +
+      "  #Transitions: " + tm.transitions.length;
+    div.textContent = text;
+  }
+
+  function tokensToDisplay(tokens) {
+    return tokens.join(" ");
+  }
+
+  function renderDominoPalette(dominos) {
+    const palette = document.getElementById('dominoPalette');
+    palette.innerHTML = "";
+
+    const steps = [1, 2, 3, 4, 5, 6, 7];
+
+    steps.forEach(step => {
+      const groupDominos = dominos.filter(d => d.step === step);
+      if (groupDominos.length === 0) return;
+
+      const group = document.createElement('div');
+      group.className = 'step-group';
+
+      const header = document.createElement('div');
+      header.className = 'step-header';
+      header.textContent = "Step " + step;
+      group.appendChild(header);
+
+      const list = document.createElement('div');
+      list.className = 'domino-list';
+
+      // We need global indices from currentDominoes, not just local ones
+      for (let i = 0; i < dominos.length; i++) {
+        const d = dominos[i];
+        if (d.step !== step) continue;
+
+        const el = document.createElement('div');
+        el.className = 'domino step-' + step;
+        el.draggable = true;
+        el.dataset.dominoIndex = String(i);
+        el.title = d.info;   // tooltip
+
+        const top = document.createElement('div');
+        top.className = 'domino-top';
+        top.textContent = tokensToDisplay(d.top);
+
+        const bottom = document.createElement('div');
+        bottom.className = 'domino-bottom';
+        bottom.textContent = tokensToDisplay(d.bottom);
+
+        el.appendChild(top);
+        el.appendChild(bottom);
+
+        el.addEventListener('dragstart', (ev) => {
+          ev.dataTransfer.setData('text/plain', 'palette:' + String(i));
+        });
+
+        list.appendChild(el);
+      }
+
+      group.appendChild(list);
+      palette.appendChild(group);
+    });
+  }
+
+  function createWorkspaceTile(idx) {
+    const workspace = document.getElementById('workspace');
+    const d = currentDominoes[idx];
+
+    const tile = document.createElement('div');
+    tile.className = 'domino step-' + d.step;
+    tile.dataset.dominoIndex = String(idx);
+    tile.draggable = true;
+    tile.title = d.info;   // tooltip
+
+    const top = document.createElement('div');
+    top.className = 'domino-top';
+    top.textContent = tokensToDisplay(d.top);
+
+    const bottom = document.createElement('div');
+    bottom.className = 'domino-bottom';
+    bottom.textContent = tokensToDisplay(d.bottom);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'delete-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Remove this tile';
+
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      tile.remove();
+      concatWorkspaceStrings();
+    });
+
+    tile.appendChild(top);
+    tile.appendChild(bottom);
+    tile.appendChild(delBtn);
+
+    tile.addEventListener('dragstart', (ev) => {
+      const children = Array.from(workspace.children);
+      const fromIndex = children.indexOf(tile);
+      ev.dataTransfer.setData('text/plain', 'workspace:' + String(fromIndex));
+    });
+
+    return tile;
+  }
+
+  function concatWorkspaceStrings() {
+    const workspace = document.getElementById('workspace');
+    const children = Array.from(workspace.querySelectorAll('.domino'));
+
+    let topTokens = [];
+    let bottomTokens = [];
+
+    for (const ch of children) {
+      const idx = parseInt(ch.dataset.dominoIndex, 10);
+      const d = currentDominoes[idx];
+      topTokens = topTokens.concat(d.top);
+      bottomTokens = bottomTokens.concat(d.bottom);
+    }
+
+    const topStr = tokensToDisplay(topTokens);
+    const bottomStr = tokensToDisplay(bottomTokens);
+
+    const concatDiv = document.getElementById('concatStrings');
+    if (children.length === 0) {
+      concatDiv.textContent = "";
+      return;
+    }
+
+    const equal = (topTokens.join("|") === bottomTokens.join("|"));
+    concatDiv.innerHTML =
+      "Top:    " + topStr + "\n" +
+      "Bottom: " + bottomStr + "\n\n" +
+      (equal
+        ? "<span class='equal'>Top and bottom are equal ✔</span>"
+        : "<span class='not-equal'>Top and bottom differ ✘</span>");
+  }
+
+  function setupWorkspaceDnD() {
+    const workspace = document.getElementById('workspace');
+
+    workspace.addEventListener('dragover', (ev) => {
+      ev.preventDefault();
+      workspace.classList.add('dragover');
+    });
+
+    workspace.addEventListener('dragleave', () => {
+      workspace.classList.remove('dragover');
+    });
+
+    workspace.addEventListener('drop', (ev) => {
+      ev.preventDefault();
+      workspace.classList.remove('dragover');
+
+      const data = ev.dataTransfer.getData('text/plain');
+      if (!data) return;
+      const [src, idxStr] = data.split(':');
+      const workspaceChildren = Array.from(workspace.children);
+
+      let targetTile = ev.target.closest('.domino');
+      if (targetTile && targetTile.parentElement !== workspace) {
+        targetTile = null;
+      }
+
+      if (src === 'palette') {
+        const idx = parseInt(idxStr, 10);
+        if (isNaN(idx)) return;
+        const newTile = createWorkspaceTile(idx);
+
+        if (!targetTile) {
+          workspace.appendChild(newTile);
+        } else {
+          const rect = targetTile.getBoundingClientRect();
+          const before = ev.clientX < rect.left + rect.width / 2;
+          if (before) workspace.insertBefore(newTile, targetTile);
+          else workspace.insertBefore(newTile, targetTile.nextSibling);
+        }
+      } else if (src === 'workspace') {
+        const fromIndex = parseInt(idxStr, 10);
+        if (isNaN(fromIndex)) return;
+        const dragged = workspaceChildren[fromIndex];
+        if (!dragged) return;
+
+        if (!targetTile || targetTile === dragged) {
+          workspace.appendChild(dragged);
+        } else {
+          const rect = targetTile.getBoundingClientRect();
+          const before = ev.clientX < rect.left + rect.width / 2;
+          if (before) {
+            workspace.insertBefore(dragged, targetTile);
+          } else {
+            workspace.insertBefore(dragged, targetTile.nextSibling);
+          }
+        }
+      }
+
+      concatWorkspaceStrings();
+    });
+  }
+
+  document.getElementById('mtFile').addEventListener('change', (ev) => {
+    const file = ev.target.files[0];
+    if (!file) {
+      currentTM = null;
+      renderTMInfo(null);
+      showStatus("");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        currentTM = parseMt(e.target.result);
+        renderTMInfo(currentTM);
+        showStatus("Turing machine parsed successfully.");
+      } catch (err) {
+        console.error(err);
+        showStatus("Error parsing .mt file: " + err.message, true);
+        currentTM = null;
+        renderTMInfo(null);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('generateBtn').addEventListener('click', () => {
+    if (!currentTM) {
+      showStatus("Please load a .mt file first.", true);
+      return;
+    }
+    const w = document.getElementById('inputWord').value || "";
+    try {
+      currentDominoes = buildDominoes(currentTM, w);
+      renderDominoPalette(currentDominoes);
+      document.getElementById('workspace').innerHTML = "";
+      concatWorkspaceStrings();
+      showStatus("Generated " + currentDominoes.length + " dominoes.");
+    } catch (err) {
+      console.error(err);
+      showStatus("Error generating dominoes: " + err.message, true);
+    }
+  });
+
+  document.getElementById('clearWorkspaceBtn').addEventListener('click', () => {
+    document.getElementById('workspace').innerHTML = "";
+    concatWorkspaceStrings();
+  });
+
+  setupWorkspaceDnD();
+</script>
+
+</body>
+</html>
