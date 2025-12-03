@@ -164,7 +164,7 @@
       background: #e6e6e6;
     }
 
-    /* Color coding per step (domino border + top background) */
+    /* Color coding per step */
     .domino.step-1 { border-color: #1f77b4; }
     .domino.step-1 .domino-top { background: #e8f1fb; }
 
@@ -185,19 +185,6 @@
 
     .domino.step-7 { border-color: #17becf; }
     .domino.step-7 .domino-top { background: #e5f6f8; }
-
-    .domino.step-8 { border-color: #555; }
-    .domino.step-8 .domino-top { background: #eeeeee; }
-
-    /* Matching text colors for concatenated strings */
-    .step-text-1 { color: #1f77b4; }
-    .step-text-2 { color: #ff7f0e; }
-    .step-text-3 { color: #2ca02c; }
-    .step-text-4 { color: #d62728; }
-    .step-text-5 { color: #9467bd; }
-    .step-text-6 { color: #8c564b; }
-    .step-text-7 { color: #17becf; }
-    .step-text-8 { color: #555; }
   </style>
 </head>
 <body>
@@ -230,6 +217,8 @@
   generating the PCP instance from the TM.
 </div>
 
+
+
 <div class="row">
   <div>
     <label for="mtFile">.mt file: </label>
@@ -242,12 +231,6 @@
   <div>
     <button id="generateBtn">Generate dominoes</button>
   </div>
-  <div style="display:flex; align-items:center; gap:0.3rem;">
-    <label style="font-weight:400; cursor:pointer;">
-      <input type="checkbox" id="toggleMPCP">
-      MPCP ⇒ PCP
-    </label>
-  </div>
 </div>
 
 <div id="tmInfo"></div>
@@ -257,8 +240,7 @@
   <div class="panel">
     <h2>Domino palette</h2>
     <div class="small-note">
-      Dominoes are grouped and color-coded by construction step.  
-      When “MPCP ⇒ PCP” is checked, you see the PCP instance, but still separated by their original steps.
+      Dominoes are grouped and color-coded by construction step (1–7). Drag tiles into the workspace.
     </div>
     <div id="dominoPalette"></div>
   </div>
@@ -266,8 +248,7 @@
   <div class="panel">
     <h2>Workspace (sequence of dominoes)</h2>
     <div class="small-note">
-      Drop tiles here in order. You can reorder or delete individual tiles.  
-      The Top/Bottom strings below are color-coded according to the step each symbol came from.
+      Drop tiles here in order. You can reorder or delete individual tiles. Colors still indicate the step.
     </div>
     <div id="workspace"></div>
     <button id="clearWorkspaceBtn" style="margin-top:0.5rem;">Clear workspace</button>
@@ -278,7 +259,6 @@
 <script>
   // Global state
   let currentTM = null;
-  let mpcpDominoes = [];
   let currentDominoes = [];
 
   function showStatus(msg, isError=false) {
@@ -343,7 +323,7 @@
   }
 
   function tokenizeWord(w) {
-    // Each character is a symbol (except spaces)
+    // Currently: each char is a symbol (except spaces)
     return w.split("").filter(ch => ch !== " ");
   }
 
@@ -360,25 +340,15 @@
     return Array.from(S);
   }
 
-  // Domino: { top: [tokens], bottom: [tokens], info: string, step: 1..8 }
+  // Domino: { top: [tokens], bottom: [tokens], info: string, step: 1..7 }
   function buildDominoes(tm, inputWord) {
     const wTokens = tokenizeWord(inputWord);
-
-    // All symbols that come from the original TM + input word
-    const baseSymbols = buildSymbolSet(tm, wTokens); // alphabet ∪ {marker, blank} ∪ symbols in transitions ∪ input
-
-    // Choose a fresh boundary symbol (HASH) that is NOT in the TM alphabet or other TM symbols
-    const usedForHash = new Set(baseSymbols);
-    const HASH = chooseFreshSymbol("#", usedForHash);
-
-    // S is the set of "TM-related" symbols that can appear on the tape
-    // (we don't include HASH here on purpose; it's a special PCP boundary symbol)
-    const S = baseSymbols;
+    const S = buildSymbolSet(tm, wTokens);
     const q0 = tm.initialState;
     const qA = tm.acceptState;
     const qR = tm.rejectState;
-
     const dominos = [];
+    const HASH = "#";
 
     function addDomino(topTokens, bottomTokens, info, step) {
       dominos.push({
@@ -429,7 +399,7 @@
       }
     }
 
-    // 4) Copying tiles (for all "normal" symbols)
+    // 4) Copying tiles
     for (const a of S) {
       addDomino(
         [a],
@@ -439,7 +409,7 @@
       );
     }
 
-    // 5) #/# and #/β#   (using the fresh HASH)
+    // 5) #/# and #/β#
     addDomino([HASH], [HASH], "Step 5: boundary #/#", 5);
     addDomino([HASH], [tm.blankSymbol, HASH], "Step 5: boundary #/β#", 5);
 
@@ -449,12 +419,11 @@
       addDomino([qA, a], [qA], "Step 6: collapse qA a → qA", 6);
     }
 
-    // 7) qA ## / #   (using the fresh HASH)
+    // 7) qA ## / #
     addDomino([qA, HASH, HASH], [HASH], "Step 7: final cleanup qA##/#", 7);
 
     return dominos;
   }
-
 
   function renderTMInfo(tm) {
     const div = document.getElementById('tmInfo');
@@ -483,8 +452,7 @@
     const palette = document.getElementById('dominoPalette');
     palette.innerHTML = "";
 
-    const steps = Array.from(new Set(dominos.map(d => d.step))).sort((a, b) => a - b);
-    const usePCP = document.getElementById('toggleMPCP')?.checked;
+    const steps = [1, 2, 3, 4, 5, 6, 7];
 
     steps.forEach(step => {
       const groupDominos = dominos.filter(d => d.step === step);
@@ -495,20 +463,13 @@
 
       const header = document.createElement('div');
       header.className = 'step-header';
-
-      if (step === 8) {
-        header.textContent = "Step 8 (closing tile for MPCP ⇒ PCP)";
-      } else if (usePCP) {
-        header.textContent = "Step " + step + " (PCP, from original Step " + step + ")";
-      } else {
-        header.textContent = "Step " + step;
-      }
-
+      header.textContent = "Step " + step;
       group.appendChild(header);
 
       const list = document.createElement('div');
       list.className = 'domino-list';
 
+      // We need global indices from currentDominoes, not just local ones
       for (let i = 0; i < dominos.length; i++) {
         const d = dominos[i];
         if (d.step !== step) continue;
@@ -578,7 +539,7 @@
     tile.addEventListener('dragstart', (ev) => {
       const children = Array.from(workspace.children);
       const fromIndex = children.indexOf(tile);
-      ev.dataTransfer.setData('text/plain', 'workspace:' + fromIndex);
+      ev.dataTransfer.setData('text/plain', 'workspace:' + String(fromIndex));
     });
 
     return tile;
@@ -588,21 +549,18 @@
     const workspace = document.getElementById('workspace');
     const children = Array.from(workspace.querySelectorAll('.domino'));
 
-    // Collect sequences with step info
-    const topSeq = [];
-    const bottomSeq = [];
+    let topTokens = [];
+    let bottomTokens = [];
 
     for (const ch of children) {
       const idx = parseInt(ch.dataset.dominoIndex, 10);
       const d = currentDominoes[idx];
-      const step = d.step;
-      for (const sym of d.top) {
-        topSeq.push({ sym, step });
-      }
-      for (const sym of d.bottom) {
-        bottomSeq.push({ sym, step });
-      }
+      topTokens = topTokens.concat(d.top);
+      bottomTokens = bottomTokens.concat(d.bottom);
     }
+
+    const topStr = tokensToDisplay(topTokens);
+    const bottomStr = tokensToDisplay(bottomTokens);
 
     const concatDiv = document.getElementById('concatStrings');
     if (children.length === 0) {
@@ -610,23 +568,10 @@
       return;
     }
 
-    function seqToHTML(seq) {
-      return seq.map(t => {
-        const cls = `step-text-${t.step}`;
-        const safeSym = String(t.sym).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/&/g, "&amp;");
-        return `<span class="${cls}">${safeSym}</span>`;
-      }).join(" ");
-    }
-
-    const topHTML = seqToHTML(topSeq);
-    const bottomHTML = seqToHTML(bottomSeq);
-
-    // Equality check uses only the symbols, ignoring colors
-    const equal = topSeq.map(t => t.sym).join("|") === bottomSeq.map(t => t.sym).join("|");
-
+    const equal = (topTokens.join("|") === bottomTokens.join("|"));
     concatDiv.innerHTML =
-      `Top:    ${topHTML}<br>` +
-      `Bottom: ${bottomHTML}<br><br>` +
+      "Top:    " + topStr + "\n" +
+      "Bottom: " + bottomStr + "\n\n" +
       (equal
         ? "<span class='equal'>Top and bottom are equal ✔</span>"
         : "<span class='not-equal'>Top and bottom differ ✘</span>");
@@ -694,154 +639,11 @@
     });
   }
 
-  // ----- MPCP → PCP transformation -----
-
-  function computeUsedSymbols(dominos) {
-    const used = new Set();
-    for (const d of dominos) {
-      for (const t of d.top) used.add(t);
-      for (const t of d.bottom) used.add(t);
-    }
-    return used;
-  }
-
-  function chooseFreshSymbol(preferred, used) {
-    const candidates = [
-      preferred,
-      "⋆", "☆", "@", "§", "+", "◊", "◆", "◇"
-    ];
-    for (const c of candidates) {
-      if (!used.has(c)) return c;
-    }
-    let i = 1;
-    while (used.has(preferred + i)) i++;
-    return preferred + i;
-  }
-
-  function starPrefix(seq, star) {
-    const res = [];
-    for (const s of seq) {
-      res.push(star, s);
-    }
-    return res;
-  }
-
-  function starSuffix(seq, star) {
-    const res = [];
-    for (const s of seq) {
-      res.push(s, star);
-    }
-    return res;
-  }
-
-  function starBoth(seq, star) {
-    const res = [star];
-    for (const s of seq) {
-      res.push(s, star);
-    }
-    return res;
-  }
-
-  // Transform MPCP dominoes into PCP dominoes, preserving original step (1..7)
-  function transformMPCPtoPCP(mpcpDominoes) {
-    if (!mpcpDominoes || mpcpDominoes.length === 0) return [];
-
-    const used = computeUsedSymbols(mpcpDominoes);
-    const starSym = chooseFreshSymbol("*", used);
-    used.add(starSym);
-    const diamondSym = chooseFreshSymbol("⋄", used);
-
-    const PCP = [];
-
-    const first = mpcpDominoes[0];
-    const t1 = first.top;
-    const b1 = first.bottom;
-    const s1 = first.step;  // original step (likely 1)
-
-    // (⋆t1 / ⋆b1⋆) – keep original step
-    PCP.push({
-      top: starPrefix(t1, starSym),
-      bottom: starBoth(b1, starSym),
-      info: "PCP (from Step " + s1 + "): forcing first tile (⋆t₁ / ⋆b₁⋆)",
-      step: s1
-    });
-
-    // (⋆t1 / b1⋆) – same original step
-    PCP.push({
-      top: starPrefix(t1, starSym),
-      bottom: starSuffix(b1, starSym),
-      info: "PCP (from Step " + s1 + "): continuation (⋆t₁ / b₁⋆)",
-      step: s1
-    });
-
-    // (⋆ti / bi⋆) for i >= 2 – each keeps its original step
-    for (let i = 1; i < mpcpDominoes.length; i++) {
-      const d = mpcpDominoes[i];
-      PCP.push({
-        top: starPrefix(d.top, starSym),
-        bottom: starSuffix(d.bottom, starSym),
-        info: "PCP (from Step " + d.step + "): tile from MPCP index " + (i + 1),
-        step: d.step
-      });
-    }
-
-    // Closing tile *⋄ / ⋄ as Step 8
-    PCP.push({
-      top: [starSym, diamondSym],
-      bottom: [diamondSym],
-      info: "PCP: closing tile " + starSym + diamondSym + "/" + diamondSym,
-      step: 8
-    });
-
-    return PCP;
-  }
-
-  function updateDominoView() {
-    const toggle = document.getElementById('toggleMPCP');
-    const usePCP = toggle && toggle.checked;
-
-    if (!mpcpDominoes || mpcpDominoes.length === 0) {
-      currentDominoes = [];
-      renderDominoPalette([]);
-      document.getElementById('workspace').innerHTML = "";
-      concatWorkspaceStrings();
-      showStatus("No MPCP dominoes to display.");
-      return;
-    }
-
-    const N = mpcpDominoes.length;
-
-    if (usePCP) {
-      currentDominoes = transformMPCPtoPCP(mpcpDominoes);
-      const K = currentDominoes.length;
-      showStatus(
-        "Showing PCP instance with " + K + " dominoes " +
-        "(derived from " + N + " MPCP dominoes)."
-      );
-    } else {
-      currentDominoes = mpcpDominoes.slice();
-      showStatus("Showing original " + N + " MPCP dominoes.");
-    }
-
-    renderDominoPalette(currentDominoes);
-    document.getElementById('workspace').innerHTML = "";
-    concatWorkspaceStrings();
-  }
-
-
-
-  // ----- Wiring UI events -----
-
   document.getElementById('mtFile').addEventListener('change', (ev) => {
     const file = ev.target.files[0];
     if (!file) {
       currentTM = null;
-      mpcpDominoes = [];
-      currentDominoes = [];
       renderTMInfo(null);
-      renderDominoPalette([]);
-      document.getElementById('workspace').innerHTML = "";
-      concatWorkspaceStrings();
       showStatus("");
       return;
     }
@@ -868,25 +670,20 @@
     }
     const w = document.getElementById('inputWord').value || "";
     try {
-      mpcpDominoes = buildDominoes(currentTM, w);
-      updateDominoView();  // this now also updates the status message
+      currentDominoes = buildDominoes(currentTM, w);
+      renderDominoPalette(currentDominoes);
+      document.getElementById('workspace').innerHTML = "";
+      concatWorkspaceStrings();
+      showStatus("Generated " + currentDominoes.length + " dominoes.");
     } catch (err) {
       console.error(err);
       showStatus("Error generating dominoes: " + err.message, true);
     }
   });
 
-
   document.getElementById('clearWorkspaceBtn').addEventListener('click', () => {
     document.getElementById('workspace').innerHTML = "";
     concatWorkspaceStrings();
-  });
-
-  document.getElementById('toggleMPCP').addEventListener('change', () => {
-    if (!mpcpDominoes || mpcpDominoes.length === 0) {
-      return;
-    }
-    updateDominoView();
   });
 
   setupWorkspaceDnD();
