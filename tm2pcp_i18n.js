@@ -33,6 +33,8 @@ const I18N = {
     "tm.states": "States (Q):",
     "tm.initial_state": "Initial state (q0):",
     "tm.accepting_states": "Accepting states (F):",
+    "tm.num_transitions_distinct": "Distinct transitions:",
+    "tm.num_transitions_raw": "Raw transitions in file:",
     "tm.num_transitions": "#Transitions:",
     "tm.comment_title": "Comment (from .mt file):",
 
@@ -105,6 +107,8 @@ const I18N = {
     "tm.states": "Estados (Q):",
     "tm.initial_state": "Estado inicial (q0):",
     "tm.accepting_states": "Estados de aceitação (F):",
+    "tm.num_transitions_distinct": "Transições distintas:",
+    "tm.num_transitions_raw": "Transições brutas no arquivo:",
     "tm.num_transitions": "#Transições:",
     "tm.comment_title": "Comentário (do arquivo .mt):",
 
@@ -147,6 +151,33 @@ const I18N = {
 
 let currentLang = "en";
 
+// --- Track last status message so we can retranslate it on language changes ---
+let lastStatusKey = null;
+let lastStatusParams = {};
+let lastStatusIsError = false;
+
+function setStatusFromKey(key, params = {}, isError = false) {
+  // If key is null/empty: clear status and clear the “last status” memory.
+  if (!key) {
+    lastStatusKey = null;
+    lastStatusParams = {};
+    lastStatusIsError = false;
+    if (typeof showStatus === "function") {
+      showStatus("", false);
+    }
+    return;
+  }
+
+  lastStatusKey = key;
+  lastStatusParams = params || {};
+  lastStatusIsError = !!isError;
+
+  if (typeof showStatus === "function") {
+    showStatus(t(key, lastStatusParams), lastStatusIsError);
+  }
+}
+
+
 function t(key, params = {}) {
   const dict = I18N[currentLang] || I18N["en"];
   let s = dict[key] || key;
@@ -180,8 +211,20 @@ function setLanguage(lang) {
   if (!I18N[lang]) lang = "en";
   currentLang = lang;
   localStorage.setItem("tm2pcp-lang", lang);
+
   applyI18n();
+
+  // Re-render TM info in the new language (if available)
+  if (typeof renderTMInfo === "function") {
+    renderTMInfo(currentTM);
+  }
+
+  // Re-render status in the new language, if we know which message it is
+  if (lastStatusKey && typeof showStatus === "function") {
+    showStatus(t(lastStatusKey, lastStatusParams), lastStatusIsError);
+  }
 }
+
 
 function initLanguageFromStorage() {
   const saved = localStorage.getItem("tm2pcp-lang");
