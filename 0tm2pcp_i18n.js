@@ -11,11 +11,6 @@ const I18N = {
     "label.mt_file": ".mt file:",
     "label.input_word": "Input word:",
     "label.generate_btn": "Generate dominoes",
-    "button.export_csv": "Export CSV",
-    "tooltip.export_csv": "Export the currently displayed domino set as a CSV file.",
-    "status.export_none": "Nothing to export: generate dominoes first.",
-    "status.export_ok": "Exported {N} dominoes to {FILE}.",
-
     "label.mpcp_to_pcp": "MPCP ⇒ PCP",
     "label.dark_mode": "Dark mode",
     "button.clear_workspace": "Clear workspace",
@@ -52,10 +47,9 @@ const I18N = {
     "status.pcp_shown":
       "Showing PCP instance with {K} dominoes (derived from {N} MPCP dominoes).",
     "status.gen_error": "Error generating dominoes: {ERR}",
-    "status.invalid_input_word": "Invalid input word: symbol \"{CH}\" at position {IDX} is not in the input alphabet. Allowed symbols: {ALPH}.",
 
     // About / header
-    "about.developed_by_label": "Developed by Prof. Bruno Iochins Grisci",
+    "about.developed_by_label": "Developed by:",
     "about.built_with": "(Webtool built using Generative AI — ChatGPT 5.1)",
     "about.based_on": "Based and inspired by the class of Prof. Rodrigo Machado:",
     "about.input_label": "Input format:",
@@ -90,11 +84,6 @@ const I18N = {
     "label.mt_file": "Arquivo .mt:",
     "label.input_word": "Palavra de entrada:",
     "label.generate_btn": "Gerar dominós",
-    "button.export_csv": "Exportar CSV",
-    "tooltip.export_csv": "Exporta o conjunto de dominós atualmente exibido para um arquivo CSV.",
-    "status.export_none": "Nada para exportar: gere os dominós primeiro.",
-    "status.export_ok": "Exportados {N} dominós para {FILE}.",
-
     "label.mpcp_to_pcp": "PCPM ⇒ PCP",
     "label.dark_mode": "Modo escuro",
     "button.clear_workspace": "Limpar área de trabalho",
@@ -132,11 +121,9 @@ const I18N = {
     "status.pcp_shown":
       "Exibindo instância de PCP com {K} dominós (derivados de {N} dominós de PCPM).",
     "status.gen_error": "Erro ao gerar dominós: {ERR}",
-    "status.invalid_input_word": "Palavra de entrada inválida: o símbolo \"{CH}\" na posição {IDX} não pertence ao alfabeto de entrada. Símbolos permitidos: {ALPH}.",
-
 
     // About / header
-    "about.developed_by_label": "Desenvolvido por Prof. Bruno Iochins Grisci",
+    "about.developed_by_label": "Desenvolvido por:",
     "about.built_with": "(Ferramenta web criada com IA generativa — ChatGPT 5.1)",
     "about.based_on": "Baseada e inspirada na aula do Prof. Rodrigo Machado:",
     "about.input_label": "Formato de entrada:",
