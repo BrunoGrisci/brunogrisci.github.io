@@ -100,7 +100,7 @@ const I18N = {
     "solver.result.nodelimit": "Node limit reached. (expanded {N} nodes, {MS} ms)",
     "solver.result.cancelled": "Cancelled.",
     "solver.title_pcp": "PCP Solver (bounded)",
-    "solver.title_mpcp": "MPCP Solver (bounded)"
+    "solver.title_mpcp": "MPCP Solver (bounded)",
 },
 
   "pt-BR": {
@@ -204,7 +204,7 @@ const I18N = {
     "solver.result.nodelimit": "Limite de nós atingido. (expandidos {N} nós, {MS} ms)",
     "solver.result.cancelled": "Cancelado.",
     "solver.title_pcp": "Resolvedor PCP (busca limitada)",
-    "solver.title_mpcp": "Resolvedor MPCP (busca limitada)"
+    "solver.title_mpcp": "Resolvedor MPCP (busca limitada)",
 }
 };
 
