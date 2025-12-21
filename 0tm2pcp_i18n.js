@@ -77,31 +77,8 @@ const I18N = {
 
     // Footer
     "footer.code_label": "Code on GitHub:",
-    "footer.licensed_label": "Licensed under",
-    "solver.title": "PCP Solver (bounded)",
-    "solver.note": "PCP is undecidable. This solver performs a bounded search and may fail even if a solution exists.",
-    "solver.credit": "Inspired by Arne Vogel's blogpost and algorithm (<a href=\"https://www.arnevogel.com/post-correspondence-problem/\" target=\"_blank\" rel=\"noopener noreferrer\">arnevogel.com</a>) and Ling Zhao's Thesis (Chapter 2.2) (<a href=\"https://webdocs.cs.ualberta.ca/~games/PCP/thesis/pcp.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">pcp.pdf</a>).",
-    "solver.depth_label": "Max depth:",
-    "solver.time_label": "Time limit (ms):",
-    "solver.nodes_label": "Node limit:",
-    "solver.solve_btn": "Try solve",
-    "solver.cancel_btn": "Cancel",
-    "solver.load_btn": "Load solution into workspace",
-    "solver.status.need_dominoes": "Generate dominoes first.",
-    "solver.status.running": "Searching…",
-    "solver.status.progress": "Expanded {N} nodes (depth={D}, best suffix={B})",
-    "solver.status.found": "Solution found (length {LEN}).",
-    "solver.status.done": "Solver finished.",
-    "solver.status.cancelled": "Solver cancelled.",
-    "solver.status.error": "Solver error: {ERR}",
-    "solver.result.found": "Found solution (length {LEN}) in {MS} ms after expanding {N} nodes. Sequence (1-based indices): {SEQ}",
-    "solver.result.notfound": "No solution found within the current bounds. (expanded {N} nodes, {MS} ms)",
-    "solver.result.timeout": "Time limit reached. (expanded {N} nodes, {MS} ms)",
-    "solver.result.nodelimit": "Node limit reached. (expanded {N} nodes, {MS} ms)",
-    "solver.result.cancelled": "Cancelled.",
-    "solver.title_pcp": "PCP Solver (bounded)",
-    "solver.title_mpcp": "MPCP Solver (bounded)"
-},
+    "footer.licensed_label": "Licensed under"
+  },
 
   "pt-BR": {
     // Titles / sections
@@ -181,31 +158,8 @@ const I18N = {
 
     // Footer
     "footer.code_label": "Código no GitHub:",
-    "footer.licensed_label": "Licenciado sob",
-    "solver.title": "Solucionador de PCP (limitado)",
-    "solver.note": "PCP é indecidível. Este solucionador faz uma busca limitada e pode falhar mesmo que exista uma solução.",
-    "solver.credit": "Inspirado no blogpost e algoritmo de Arne Vogel (<a href=\"https://www.arnevogel.com/post-correspondence-problem/\" target=\"_blank\" rel=\"noopener noreferrer\">arnevogel.com</a>) e na Tese (Capítulo 2.2) de Ling Zhao (<a href=\"https://webdocs.cs.ualberta.ca/~games/PCP/thesis/pcp.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">pcp.pdf</a>).",
-    "solver.depth_label": "Profundidade máx.:",
-    "solver.time_label": "Limite de tempo (ms):",
-    "solver.nodes_label": "Limite de nós:",
-    "solver.solve_btn": "Tentar resolver",
-    "solver.cancel_btn": "Cancelar",
-    "solver.load_btn": "Carregar solução na área de trabalho",
-    "solver.status.need_dominoes": "Gere os dominós primeiro.",
-    "solver.status.running": "Buscando…",
-    "solver.status.progress": "Expandidos {N} nós (prof={D}, melhor sufixo={B})",
-    "solver.status.found": "Solução encontrada (tamanho {LEN}).",
-    "solver.status.done": "Busca finalizada.",
-    "solver.status.cancelled": "Busca cancelada.",
-    "solver.status.error": "Erro no solucionador: {ERR}",
-    "solver.result.found": "Solução encontrada (tamanho {LEN}) em {MS} ms após expandir {N} nós. Sequência (índices começando em 1): {SEQ}",
-    "solver.result.notfound": "Nenhuma solução encontrada dentro dos limites atuais. (expandidos {N} nós, {MS} ms)",
-    "solver.result.timeout": "Limite de tempo atingido. (expandidos {N} nós, {MS} ms)",
-    "solver.result.nodelimit": "Limite de nós atingido. (expandidos {N} nós, {MS} ms)",
-    "solver.result.cancelled": "Cancelado.",
-    "solver.title_pcp": "Resolvedor PCP (busca limitada)",
-    "solver.title_mpcp": "Resolvedor MPCP (busca limitada)"
-}
+    "footer.licensed_label": "Licenciado sob"
+  }
 };
 
 let currentLang = "en";
@@ -252,14 +206,6 @@ function applyI18n() {
     if (!key) return;
     el.textContent = t(key);
   });
-
-  // HTML-capable i18n (used only when we intentionally want links/markup)
-  document.querySelectorAll("[data-i18n-html]").forEach(el => {
-    const key = el.getAttribute("data-i18n-html");
-    if (!key) return;
-    el.innerHTML = t(key);
-  });
-
 
   const lbl = document.getElementById("tmTableLabel");
   if (lbl) {
