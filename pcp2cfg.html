@@ -1,0 +1,4031 @@
+<!-- Bruno Iochins Grisci 2025-2026 — pcp2cfg -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T82L645Q');</script>
+    <!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8" />
+  <title>PCP → CFG Ambiguity</title>
+  <link rel="icon" href="images/domino.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Premium Design by Antigravity -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Light Theme */
+      --bg: #f8fafc;
+      --fg: #1e293b;
+      --panel-bg: #ffffff;
+      --panel-border: #e2e8f0;
+      --workspace-border: #cbd5e1;
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-fg: #ffffff;
+
+      --status-ok: #059669;
+      --status-err: #dc2626;
+      --small-note: #64748b;
+
+      --chip-bg: #f1f5f9;
+      --chip-border: #e2e8f0;
+
+      --tree-node-bg: #ffffff;
+      --tree-node-border: #cbd5e1;
+      --tree-edge: #94a3b8;
+
+      --domino-bg: #ffffff;
+      --domino-border: #94a3b8;
+      --domino-shadow: rgba(0, 0, 0, 0.05);
+
+      --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    }
+
+    body.dark-mode {
+      /* Dark Theme */
+      --bg: #0f172a;
+      --fg: #f1f5f9;
+      --panel-bg: #1e293b;
+      --panel-border: #334155;
+      --workspace-border: #475569;
+
+      --primary: #60a5fa;
+      --primary-hover: #3b82f6;
+      --primary-fg: #ffffff;
+
+      --status-ok: #34d399;
+      --status-err: #f87171;
+      --small-note: #94a3b8;
+
+      --chip-bg: #0f172a;
+      --chip-border: #334155;
+
+      --tree-node-bg: #1e293b;
+      --tree-node-border: #475569;
+      --tree-edge: #64748b;
+
+      --domino-bg: #1e293b;
+      --domino-border: #64748b;
+      --domino-shadow: rgba(0, 0, 0, 0.25);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 1.5rem;
+      background: var(--bg);
+      color: var(--fg);
+      transition: background 0.3s ease, color 0.3s ease;
+      line-height: 1.6;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    .topbar .spacer {
+      flex: 1;
+    }
+
+    .top-right-controls {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .icon-switch {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      color: var(--fg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .icon-switch:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .icon-switch:active {
+      transform: translateY(0);
+    }
+
+    /* Buttons */
+    button {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--panel-border);
+      cursor: pointer;
+      background: var(--panel-bg);
+      color: var(--fg);
+      font-weight: 500;
+      font-family: inherit;
+      transition: all 0.2s;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    button:hover {
+      background: var(--bg);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: var(--panel-border);
+      color: var(--small-note);
+    }
+
+    /* Primary Buttons */
+    button#generateBtn,
+    button#solveBtn,
+    button#buildDerivBtn,
+    button#addDominoBtn {
+      background: var(--primary);
+      color: var(--primary-fg);
+      border-color: transparent;
+    }
+
+    button#generateBtn:hover,
+    button#solveBtn:hover,
+    button#buildDerivBtn:hover,
+    button#addDominoBtn:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    }
+
+    button.help-btn {
+      width: 1.5rem;
+      height: 1.5rem;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 0.85rem;
+      color: var(--small-note);
+      border-color: var(--panel-border);
+      background: transparent;
+    }
+
+    button.help-btn:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: var(--bg);
+    }
+
+    /* Inputs */
+    input[type="text"],
+    input[type="file"],
+    input[type="number"] {
+      background: var(--panel-bg);
+      color: var(--fg);
+      border: 1px solid var(--panel-border);
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="file"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Panels */
+    .panel {
+      border: 1px solid var(--panel-border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      background: var(--panel-bg);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.3s;
+    }
+
+    .panel:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: var(--fg);
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Split Container */
+    .split-container {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+      align-items: flex-start;
+      /* Ensure it wraps if space is super tight but prefer no wrap for desktop */
+      flex-wrap: nowrap;
+      height: calc(100vh - 240px);
+      min-height: 400px;
+    }
+
+    /* Explicit flex properties to fix resize */
+    #leftPane {
+      /* Start with some reasonable width, allow shrink/grow */
+      flex: 0 0 40%;
+      min-width: 300px;
+      max-width: 80%;
+      overflow-y: auto;
+      height: 100%;
+      padding-right: 0.5rem;
+      /* Space for scrollbar */
+    }
+
+    #rightPane {
+      /* Take remaining space */
+      flex: 1 1 auto;
+      min-width: 300px;
+      overflow: hidden;
+      /* Prevent content blowing out width */
+      overflow-y: auto;
+      height: 100%;
+      padding-right: 0.5rem;
+      /* Space for scrollbar */
+    }
+
+    #divider {
+      width: 8px;
+      background: var(--panel-border);
+      border-radius: 4px;
+      cursor: col-resize;
+      align-self: stretch;
+      /* Match height */
+      transition: background 0.2s, opacity 0.2s;
+      margin: 0;
+      opacity: 0.5;
+      flex: 0 0 8px;
+      /* Fix width */
+    }
+
+    #divider:hover,
+    #divider.active {
+      background: var(--primary);
+      opacity: 1;
+    }
+
+    /* Dominoes */
+    .pcp-domino-tile {
+      background: var(--domino-bg);
+      border: 2px solid var(--domino-border, var(--panel-border));
+      border-radius: 0.5rem;
+      box-shadow: var(--domino-shadow);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, border-width 0.2s;
+      width: fit-content;
+      min-width: 0;
+    }
+
+    .pcp-domino-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .pcp-domino-top {
+      background: rgba(59, 130, 246, 0.05);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 0.5rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--primary);
+    }
+
+    body.dark-mode .pcp-domino-top {
+      background: rgba(59, 130, 246, 0.15);
+    }
+
+    .pcp-domino-bottom {
+      padding: 0.5rem;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .pcp-domino-tile input[type="text"] {
+      text-align: center;
+      background: transparent;
+      border: none;
+      width: 100%;
+      font-weight: inherit;
+      color: inherit;
+      padding: 0;
+    }
+
+    .pcp-domino-tile input[type="text"]:focus {
+      box-shadow: none;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .domino-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 0.5rem;
+      min-height: 100px;
+    }
+
+    /* Workspace */
+    #workspace {
+      background: var(--bg);
+      border: 2px dashed var(--workspace-border);
+      border-radius: 0.75rem;
+      min-height: 140px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1.5rem;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    #workspace.dragover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    /* Tree */
+    .tree-wrap {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .tree-controls-row {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .tree-control {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .tree-panel {
+      flex: 1;
+      overflow: auto;
+      padding: 1.5rem;
+      border: 1px solid var(--panel-border);
+      border-radius: 0.75rem;
+      background: var(--bg);
+      min-height: 300px;
+      text-align: left;
+    }
+
+    .tree ul {
+      padding-top: 20px;
+      position: relative;
+      transition: all 0.5s;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .tree li {
+      text-align: center;
+      list-style-type: none;
+      position: relative;
+      padding: 20px 5px 0 5px;
+      transition: all 0.5s;
+    }
+
+    /* Connectors */
+    .tree li::before,
+    .tree li::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 50%;
+      border-top: 2px solid var(--tree-edge);
+      width: 50%;
+      height: 20px;
+    }
+
+    .tree li::after {
+      right: auto;
+      left: 50%;
+      border-left: 2px solid var(--tree-edge);
+    }
+
+    .tree li:only-child::after,
+    .tree li:only-child::before {
+      display: none;
+    }
+
+    .tree li:only-child {
+      padding-top: 0;
+    }
+
+    .tree li:first-child::before,
+    .tree li:last-child::after {
+      border: 0 none;
+    }
+
+    .tree li:last-child::before {
+      border-right: 2px solid var(--tree-edge);
+      border-radius: 0 5px 0 0;
+    }
+
+    .tree li:first-child::after {
+      border-radius: 5px 0 0 0;
+    }
+
+    .tree .node {
+      display: inline-block;
+      border: 2px solid var(--tree-node-border);
+      padding: 0.5rem 0.75rem;
+      text-decoration: none;
+      color: var(--fg);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      background: var(--tree-node-bg);
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      min-width: 24px;
+      z-index: 10;
+      position: relative;
+    }
+
+    .tree .node.term {
+      font-family: 'Fira Code', monospace;
+      background: var(--chip-bg);
+      border-color: var(--chip-border);
+      font-weight: 500;
+    }
+
+    .tree .node.nonterm-btn {
+      cursor: pointer;
+      background: var(--panel-bg);
+    }
+
+    .tree .node:hover,
+    .tree .node.highlight {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+      color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    /* Highlight path */
+    .tree li.highlight::before,
+    .tree li.highlight::after {
+      border-color: var(--primary);
+    }
+
+    .tree-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .zoom-controls {
+      display: inline-flex;
+      gap: 0.25rem;
+      align-items: center;
+    }
+
+    .zoom-controls button {
+      padding: 0.1rem 0.3rem;
+      min-width: 0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.1;
+      border-radius: 6px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      color: var(--small-note);
+    }
+
+    /* Chips */
+    .chip {
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Helper Classes */
+    .mono {
+      font-family: 'Fira Code', 'Roboto Mono', monospace;
+    }
+
+    .small-note {
+      font-size: 0.85rem;
+      color: var(--small-note);
+    }
+
+    .aligned-compare {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      background: var(--panel-bg);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--panel-border);
+      margin-top: 1rem;
+    }
+
+    /* Result Box */
+    .result-box {
+      border: 1px solid var(--panel-border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      background: var(--panel-bg);
+      margin-top: 1rem;
+    }
+
+    /* Help Modal */
+    .help-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .help-overlay.open {
+      display: flex;
+    }
+
+    .help-modal {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border-radius: 1rem;
+      width: min(900px, 90vw);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .help-modal-header {
+      border-bottom: 1px solid var(--panel-border);
+      background: var(--bg);
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .help-modal-body {
+      padding: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      overflow-y: auto;
+    }
+
+    /* Close button in modal */
+    .help-modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--panel-border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--small-note);
+    }
+
+    .aligned-tokens .tok {
+      transition: all 0.2s;
+      cursor: default;
+      border-radius: 4px;
+      border: 1px solid var(--chip-border);
+      background-color: var(--chip-bg);
+      /* Ensure border doesn't jump layout */
+      margin: 0 2px;
+      padding: 2px 6px;
+      display: inline-block;
+      min-width: 1ch;
+      text-align: center;
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    /* Ensure toks are visible even if blank */
+    .aligned-tokens .tok:empty::before {
+      content: '\00a0';
+    }
+
+    .aligned-tokens .tok.highlight {
+      background-color: #fef3c7 !important;
+      border-color: #f59e0b !important;
+      color: #1f2937 !important;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+      z-index: 5;
+    }
+
+    body.dark-mode .aligned-tokens .tok.highlight {
+      background-color: rgba(96, 165, 250, 0.25) !important;
+      border-color: #93c5fd !important;
+      color: #e5e7eb !important;
+      box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.25);
+    }
+
+    /* Aligned compare tokens */
+    .tok.blank {
+      opacity: 0.35;
+    }
+
+    .tok.eq {
+      background-color: rgba(34, 197, 94, 0.15);
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+
+    .tok.neq {
+      background-color: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.45);
+    }
+
+    /* Footer */
+    .app-footer {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border-top: 1px solid var(--panel-border);
+      text-align: center;
+      color: var(--small-note);
+      font-size: 0.85rem;
+      position: relative;
+      background: var(--bg);
+    }
+
+    /* Aligned compare styles */
+    .aligned-row {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .aligned-label {
+      font-weight: 600;
+      margin-right: 1rem;
+      min-width: 80px;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .aligned-tokens {
+      flex: 1;
+      white-space: nowrap;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    /* Wrap toggle active */
+    .wrap-on .aligned-tokens,
+    .wrap-on.aligned-tokens {
+      white-space: normal;
+      overflow-x: visible;
+      overflow-wrap: break-word;
+    }
+
+    .wrap-on .tok {
+      display: inline-block;
+      /* allows wrapping */
+    }
+
+    /* Feedback text colors */
+    .good {
+      color: var(--status-ok);
+    }
+
+    .warn {
+      color: #d97706;
+    }
+
+    /* amber-600 */
+    .danger {
+      color: var(--status-err);
+    }
+
+    body.dark-mode .warn {
+      color: #fbbf24;
+    }
+
+    /* amber-400 */
+
+    /* Chip Editor & Tokens */
+    .chip-editor {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      background: var(--panel-bg);
+      /* Use panel bg instead of transparent for contrast */
+      border: 1px solid var(--panel-border);
+      /* Move border to container */
+      border-radius: 4px;
+      padding: 4px;
+      min-height: 32px;
+      cursor: text;
+    }
+
+    .chip-editor:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .tok-chip {
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 0.85rem;
+      font-family: 'Fira Code', monospace;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .tok-del {
+      cursor: pointer;
+      opacity: 0.5;
+      font-weight: bold;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .tok-del:hover {
+      opacity: 1;
+      color: var(--status-err);
+    }
+
+    .chip-input {
+      border: none !important;
+      background: transparent !important;
+      outline: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      flex: 1;
+      min-width: 40px;
+      color: inherit;
+      height: 24px;
+    }
+
+    body.dark-mode .warn {
+      color: #fbbf24;
+    }
+
+    /* amber-400 */
+
+    /* Grammar Rules Styling */
+    .grammar-container {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-top: 0.5rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .grammar-rule {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      border: 1px solid transparent;
+      line-height: 1.6;
+    }
+
+    .grammar-rule:hover {
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+
+    body.dark-mode .grammar-rule:hover {
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+
+    .grammar-rule.highlight {
+      background-color: rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--panel-border);
+    }
+
+    body.dark-mode .grammar-rule.highlight {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .grammar-lhs {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1rem;
+      display: inline-block;
+      min-width: 1.5ch;
+    }
+
+    .grammar-arrow {
+      margin: 0 0.5rem;
+      color: var(--small-note);
+      font-weight: 400;
+    }
+
+    .grammar-rhs {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: 0.5rem;
+    }
+
+    .grammar-alternative {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      cursor: default;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .grammar-alternative.highlight {
+      background-color: rgba(59, 130, 246, 0.2);
+      border-color: var(--primary);
+    }
+
+    .grammar-alt-separator {
+      color: var(--small-note);
+      margin: 0 0.25rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .grammar-nonterm {
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      display: inline-block;
+      font-size: 0.95rem;
+    }
+
+    body.dark-mode .grammar-nonterm {
+      background: rgba(59, 130, 246, 0.2);
+    }
+
+    .grammar-term {
+      font-weight: 500;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      display: inline-block;
+      font-size: 0.9rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .grammar-index-symbol {
+      font-weight: 600;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    body.dark-mode .grammar-index-symbol {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.15);
+    }
+
+    .grammar-empty {
+      color: var(--small-note);
+      font-style: italic;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .grammar-footer {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--panel-border);
+      color: var(--small-note);
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .grammar-section {
+      margin-bottom: 1rem;
+    }
+
+    .grammar-section-title {
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 0.5rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Rule picker modal */
+    .rule-picker-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      backdrop-filter: blur(2px);
+    }
+    .rule-picker-backdrop.open {
+      display: flex;
+    }
+    .rule-picker {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 0.75rem;
+      width: min(480px, 90vw);
+      max-height: 80vh;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    .rule-picker header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+    }
+    .rule-picker main {
+      padding: 0.75rem 1rem;
+      overflow-y: auto;
+    }
+    .rule-option {
+      border: 1px solid var(--panel-border);
+      border-radius: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .rule-option:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .rule-option input {
+      margin: 0;
+    }
+    .rule-picker footer {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+  </style>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PG6S1LBB4Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-PG6S1LBB4Y');
+  </script>
+
+</head>
+
+<body>
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T82L645Q"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->  
+
+  <div class="topbar">
+    <h1>
+      <span data-i18n="title.main">PCP → CFG Ambiguity (pcp2cfg)</span>
+      <button type="button" class="help-btn" data-help="main_tool" aria-label="Help">?</button>
+    </h1>
+
+    <div class="spacer"></div>
+
+    <div class="top-right-controls">
+      <button type="button" id="darkModeSwitch" class="icon-switch" aria-pressed="false">
+        <span id="darkModeIcon" class="icon">☀️</span>
+      </button>
+      <button type="button" id="langSwitch" class="icon-switch" aria-pressed="false">
+        <span id="langIcon" class="icon">🇬🇧</span>
+      </button>
+    </div>
+  </div>
+
+    <div style="margin: 0.25rem 0 0.75rem 0; font-size:0.86rem; line-height:1.35;">
+      <strong data-i18n="about.line1">An interactive tool for the reduction PCP ⇒ CFG Ambiguity.</strong><br />
+      <span data-i18n="about.line2">Build or import a PCP instance (dominoes), generate the grammar G_D, and explore
+        derivations via T and B.</span><br />
+      <div style="margin-top:0.5rem; font-size:0.84rem;" data-i18n-html="about.dev_block"></div>
+    </div>
+
+  <div class="row">
+    <div>
+      <label for="csvFile">
+        <span data-i18n="label.csv_file">Import dominoes (.csv):</span>
+        <button type="button" class="help-btn" data-help="csv_import" aria-label="Help">?</button>
+      </label><br />
+      <input type="file" id="csvFile" accept=".csv" />
+    </div>
+
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <button id="addDominoBtn" data-i18n="button.add_domino">Add domino</button>
+      <button id="clearDominoesBtn" data-i18n="button.clear_dominoes">Clear dominoes</button>
+      <button id="exportCsvBtn" data-i18n="button.export_csv">Export CSV</button>
+      <button id="exampleBtn" data-i18n="button.load_example">Load example</button>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <div class="split-container">
+    <div id="leftPane" class="panel" style="flex: 1 1 45%;">
+      <h2>
+        <span data-i18n="title.dominoes">PCP instance (dominoes)</span>
+        <button type="button" class="help-btn" data-help="dominoes" aria-label="Help">?</button>
+      </h2>
+      <div class="small-note" data-i18n="note.dominoes">
+        Each domino i is a pair (t_i, b_i). The tool assigns a new terminal a_i used as an index marker in the grammar.
+      </div>
+
+      <div id="dominoPalette" class="domino-list" aria-label="Domino palette"></div>
+
+
+      <div class="result-box" style="margin-top:0.75rem;">
+        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+          <span class="chip">
+            <strong data-i18n="summary.k">k</strong> =
+            <span id="kCount">0</span>
+          </span>
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <!-- Removed Index Symbols List as requested -->
+
+            <span class="chip">
+              <strong data-i18n="summary.prefix">Index prefix</strong>:
+              <span id="aiPrefix" class="mono">–</span>
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <h2 style="margin-top:0;">
+        <span data-i18n="title.workspace">Workspace (sequence of dominoes)</span>
+        <button type="button" class="help-btn" data-help="workspace" aria-label="Help">?</button>
+      </h2>
+      <div class="small-note" data-i18n="note.workspace">
+        Drop tiles here in order. You can reorder or delete individual tiles.
+      </div>
+
+      <div id="workspace"></div>
+
+      <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+        <button id="clearWorkspaceBtn" data-i18n="button.clear_workspace">Clear workspace</button>
+        <button id="fromWorkspaceBtn" data-i18n="button.workspace_to_seq">Workspace → Sequence</button>
+
+        <label style="font-weight:400; cursor:pointer;">
+          <input type="checkbox" id="wrapToggle" checked>
+          <span data-i18n="label.wrap_strings">Wrap strings</span>
+        </label>
+
+        <span class="small-note" data-i18n="note.workspace_sync" style="margin-left:auto;">
+          Sync with the index sequence input below.
+        </span>
+      </div>
+
+      <div id="concatStrings" class="wrap-on"></div>
+
+
+
+      <hr style="margin: 0.85rem 0; border: none; border-top: 1px solid var(--panel-border);" />
+
+      <h2 style="margin-top:0;">
+        <span id="solverTitleText" data-i18n="solver.title_mpcp">MPCP Solver (bounded)</span>
+        <button type="button" class="help-btn" data-help="solver_bounded" aria-label="Help">?</button>
+      </h2>
+      <div class="small-note" data-i18n="solver.note">
+        PCP is undecidable. This solver performs a bounded search and may fail even if a solution exists.
+      </div>
+      <div class="small-note" data-i18n-html="solver.inspiration"></div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-top:0.75rem; align-items:flex-end;">
+        <div>
+          <label for="solverDepth" style="font-weight:600; font-size:0.85rem;">
+            <span data-i18n="solver.depth_label">Max depth:</span>
+            <button type="button" class="help-btn" data-help="solver_max_depth" aria-label="Help">?</button>
+          </label><br>
+          <input type="text" id="solverDepth" value="20" style="min-width:5.5rem;">
+        </div>
+        <div>
+          <label for="solverTime" style="font-weight:600; font-size:0.85rem;">
+            <span data-i18n="solver.time_label">Time limit (ms):</span>
+            <button type="button" class="help-btn" data-help="solver_time_limit" aria-label="Help">?</button>
+          </label><br>
+          <input type="text" id="solverTime" value="1500" style="min-width:7rem;">
+        </div>
+        <div>
+          <label for="solverNodes" style="font-weight:600; font-size:0.85rem;">
+            <span data-i18n="solver.nodes_label">Node limit:</span>
+            <button type="button" class="help-btn" data-help="solver_node_limit" aria-label="Help">?</button>
+          </label><br>
+          <input type="text" id="solverNodes" value="200000" style="min-width:7rem;">
+        </div>
+
+        <div style="display:flex; gap:0.5rem; align-items:center; margin-left:auto;">
+          <button id="solveBtn" data-i18n="solver.solve_btn">Try solve</button>
+          <button id="cancelSolveBtn" data-i18n="solver.cancel_btn" disabled>Cancel</button>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.55rem; margin-top:0.5rem;">
+        <label style="font-weight:400; cursor:pointer; font-size:0.9rem; margin:0;">
+          <input type="checkbox" id="toggleMPCP" checked>
+          <span data-i18n="solver.toggle_mpcp">Use MPCP (force start with 1)</span>
+        </label>
+        <button type="button" class="help-btn" data-help="solver_toggle_mpcp" aria-label="Help">?</button>
+      </div>
+
+      <div id="solverProgress" class="small-note" style="margin-top:0.5rem;"></div>
+
+      <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.35rem;">
+        <button id="loadSolutionBtn" data-i18n="solver.load_btn" disabled>Load solution into workspace</button>
+      </div>
+
+      <div id="solverResult"></div>
+
+    </div>
+
+    <div id="divider" class="divider" title="Drag to resize"></div>
+
+    <div id="rightPane" class="panel" style="flex: 1 1 55%;">
+      <h2>
+        <span data-i18n="title.grammar">Generated CFG G_D</span>
+        <button type="button" class="help-btn" data-help="grammar" aria-label="Help">?</button>
+      </h2>
+
+      <div class="small-note" data-i18n="note.grammar">
+        The grammar is constructed from your dominoes using the classical reduction PCP ⇒ AMB_CFG.
+      </div>
+
+      <div id="grammarBox" class="grammar-container"></div>
+
+
+      <hr style="margin: 0.85rem 0; border: none; border-top: 1px solid var(--panel-border);" />
+
+      <h2 style="margin-top:0;">
+        <span data-i18n="title.derivations">Derivation explorer</span>
+        <button type="button" class="help-btn" data-help="derivations" aria-label="Help">?</button>
+      </h2>
+
+      <div class="row" style="margin-top:0.6rem;">
+        <div style="flex: 1 1 280px;">
+          <label for="seqInput">
+            <span data-i18n="label.sequence">Index sequence (e.g., 1,3,2):</span>
+            <button type="button" class="help-btn" data-help="sequence" aria-label="Help">?</button>
+          </label><br />
+          <input type="text" id="seqInput" placeholder="1,2,1" style="width:min(420px, 100%);" />
+          <div class="small-note" data-i18n="note.sequence">
+            This builds two derivations: S⇒T⇒* and S⇒B⇒*. Matching outputs witness ambiguity.
+          </div>
+        </div>
+
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+          <button id="toWorkspaceBtn" data-i18n="button.seq_to_workspace">Sequence → Workspace</button>
+          <label style="font-weight:400; cursor:pointer;">
+            <input type="checkbox" id="wrapToggleDeriv" checked>
+            <span data-i18n="label.wrap_strings">Wrap strings</span>
+          </label>
+          <button id="buildDerivBtn" data-i18n="button.build_derivation">Build derivations</button>
+          <button id="clearDerivBtn" data-i18n="button.clear_derivations">Clear derivations</button>
+        </div>
+      </div>
+
+      <div class="result-box">
+        <div id="derivationsAligned" class="aligned-compare" style="display:none; margin-top:0;"></div>
+
+        <div id="matchLine" class="small-note" style="margin-top:0.55rem;"></div>
+      </div>
+      <div class="tree-controls-row">
+        <div class="tree-control">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="chip"><span data-i18n="tree.label">Tree</span> T</span>
+            <span class="mono">S ⇒ T ⇒* …</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.35rem;">
+            <button id="clearTreeT" data-i18n="button.clear_tree" title="Clear tree T" aria-label="Clear tree T">✕</button>
+            <div class="zoom-controls">
+              <button id="zoomOutT" title="Zoom out" aria-label="Zoom out">🔍−</button>
+              <button id="zoomInT" title="Zoom in" aria-label="Zoom in">🔍+</button>
+            </div>
+          </div>
+        </div>
+        <div class="tree-control">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="chip"><span data-i18n="tree.label">Tree</span> B</span>
+            <span class="mono">S ⇒ B ⇒* …</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.35rem;">
+            <button id="clearTreeB" data-i18n="button.clear_tree" title="Clear tree B" aria-label="Clear tree B">✕</button>
+            <div class="zoom-controls">
+              <button id="zoomOutB" title="Zoom out" aria-label="Zoom out">🔍−</button>
+              <button id="zoomInB" title="Zoom in" aria-label="Zoom in">🔍+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tree-wrap">
+        <div class="tree-panel">
+          <div id="treeT" class="tree"></div>
+        </div>
+
+        <div class="tree-panel">
+          <div id="treeB" class="tree"></div>
+        </div>
+      </div>
+
+      <div class="small-note" data-i18n="note.undecidable" style="margin-top:0.75rem;">
+        Reminder: this tool does not decide PCP or CFG ambiguity. It helps you explore the reduction and witness
+        ambiguity when a solution is found.
+      </div>
+    </div>
+  </div>
+
+  <!-- Help modal overlay -->
+  <div id="helpOverlay" class="help-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="help-modal" role="document">
+      <div class="help-modal-header">
+        <h3 id="helpTitle" class="help-modal-title"></h3>
+        <button type="button" id="helpCloseBtn" class="help-modal-close" aria-label="Close">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </div>
+      <div id="helpBody" class="help-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Rule picker -->
+  <div id="rulePickerBackdrop" class="rule-picker-backdrop" aria-hidden="true">
+    <div class="rule-picker" role="dialog" aria-modal="true">
+      <header>
+        <span id="rulePickerTitle">Choose a rule</span>
+        <button type="button" id="rulePickerClose" class="help-modal-close" aria-label="Close">✕</button>
+      </header>
+      <main id="rulePickerList"></main>
+      <footer>
+        <button type="button" id="rulePickerCancel">Cancel</button>
+        <button type="button" id="rulePickerApply">Apply</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- i18n -->
+  <script src="pcp2cfg_i18n.js"></script>
+
+  <script>
+    // -----------------------------
+    // State
+    // -----------------------------
+    let dominoes = []; // { id: number, top: string, bottom: string }
+    let workspaceSeq = []; // array of domino indices (1..k), in order
+
+    function addToWorkspace(idx) {
+      const n = parseInt(idx, 10);
+      if (!Number.isFinite(n)) return;
+      if (n < 1 || n > dominoes.length) return;
+      workspaceSeq.push(n);
+      renderWorkspace();
+      concatWorkspaceStrings();
+    }
+
+    let workspaceDndInitialized = false;
+    function initWorkspaceDnD() {
+      const ws = document.getElementById("workspace");
+      if (!ws || workspaceDndInitialized) return;
+      workspaceDndInitialized = true;
+
+      ws.addEventListener("dragover", (ev) => {
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+      });
+
+      ws.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+
+        // If this drop is coming from a workspace re-order operation, ignore it here.
+        // (Otherwise we would append a copy at the end.)
+        const wsFrom = ev.dataTransfer.getData("application/x-ws-from");
+        if (wsFrom && wsFrom.length > 0) return;
+
+        const data = ev.dataTransfer.getData("text/plain");
+        const n = parseInt(data, 10);
+        if (!Number.isFinite(n)) return;
+        addToWorkspace(n);
+      });
+    }
+
+    let lastSolverSolution = null;
+    let solverRunning = false;
+    let solverCancelRequested = false;
+    let currentHelpId = null;
+
+    let grammarRefreshTimer = null;
+
+    const treeZoom = { T: 1, B: 1 };
+    let treeData = { T: null, B: null };
+    let nodeIdCounterGlobal = 0;
+    let pendingRulePicker = null;
+
+    function clearDerivedDueToDominoEdit() {
+      // Cancel any ongoing solver run and clear derived UI state.
+      if (solverRunning) cancelSolver();
+      resetDerivedState();
+    }
+
+    function refreshDominoMetaUI() {
+      // Update index prefix + a_i list + domino labels WITHOUT re-rendering inputs (keeps focus stable).
+      const k = dominoes.length;
+      const prefix = chooseIndexPrefix(dominoes);
+
+      const ai = indexSymbols(k, prefix);
+      const aiSummaryEl = document.getElementById("aiSummary");
+      if (aiSummaryEl) aiSummaryEl.textContent = ai.length ? ai.join(", ") : "∅";
+
+      const prefixEl = document.getElementById("aiPrefix");
+      if (prefixEl) prefixEl.textContent = prefix || "–";
+
+      // Update each label chip above the domino tiles
+      document.querySelectorAll(".pcp-domino-label").forEach((el) => {
+        const idStr = el.dataset.dominoId;
+        const id = parseInt(idStr, 10);
+        if (!Number.isFinite(id)) return;
+        el.textContent = `i=${id}  |  ${prefix}${id}`;
+      });
+    }
+
+    function scheduleGrammarRefresh() {
+      // Debounced "soft refresh" while typing:
+      // - updates grammar
+      // - updates prefix chips/labels
+      // - does NOT re-render the palette, so typing isn't interrupted.
+      if (grammarRefreshTimer) clearTimeout(grammarRefreshTimer);
+      grammarRefreshTimer = setTimeout(() => {
+        refreshGrammarBox();
+        refreshDominoMetaUI();
+        grammarRefreshTimer = null;
+      }, 250); // 250–400ms feels good for typing
+    }
+
+
+
+    // -----------------------------
+    // Utilities
+    // -----------------------------
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function showStatus(msg, isError = false) {
+      const st = document.getElementById("status");
+      st.textContent = msg || "";
+      const dark = document.body.classList.contains("dark-mode");
+      st.style.color = isError ? (dark ? "#fca5a5" : "darkred")
+        : (dark ? "#e5e7eb" : "#333333");
+    }
+
+    function setStatusFromKey(key, params = {}, isError = false) {
+      if (!key) return showStatus("", false);
+      showStatus(window.t(key, params), isError);
+    }
+
+    function normalizeDominoString(s) {
+      // Keep it simple and deterministic:
+      // - trim outer whitespace
+      // - keep inner spaces (if user wants them as terminals)
+      // You can later enforce an alphabet, but for teaching the reduction
+      // this “raw string” is often convenient.
+      return String(s ?? "").trim();
+    }
+
+    // Tokenization (tm2pcp-compatible): terminals are whitespace-separated tokens.
+    // Example: "* q0 ©" -> ["*", "q0", "©"]
+    function tokenize(s) {
+      const raw = String(s ?? "").trim();
+      if (!raw) return [];
+      return raw.split(/\s+/g).filter(Boolean);
+    }
+
+    function tokensToDisplay(tokens) {
+      return tokens.length ? tokens.join(" ") : "ε";
+    }
+
+
+    function renderAlignedCompare(targetEl, labelA, tokensA, labelB, tokensB, metaA = null, metaB = null) {
+      if (!targetEl) return;
+      const n = Math.max(tokensA.length, tokensB.length);
+
+      // column widths in "ch" units (monospace), computed per position
+      const widths = [];
+      for (let i = 0; i < n; i++) {
+        const a = tokensA[i] ?? "";
+        const b = tokensB[i] ?? "";
+        const w = Math.max(String(a).length, String(b).length, 1) + 1; // +1 for spacing
+        widths.push(w);
+      }
+
+      function tokSpan(tok, i, otherTok, meta) {
+        const isBlank = (tok === null || tok === undefined || tok === "");
+        const safe = isBlank ? "·" : escapeHtml(tok);
+        const cls = isBlank ? "tok blank" : ("tok " + (tok === otherTok ? "eq" : "neq"));
+        const w = widths[i];
+        const domAttr = meta && meta.dominoId ? ` data-domino-id="${meta.dominoId}"` : "";
+        const occAttr = meta && meta.occurrence ? ` data-occurrence="${meta.occurrence}"` : "";
+        return `<span class="${cls}" style="width:${w}ch"${domAttr}${occAttr}>${safe}</span>`;
+      }
+
+      const rowA = `<div class="aligned-row"><span class="aligned-label">${escapeHtml(labelA)}</span><div class="aligned-tokens">` +
+        widths.map((_, i) => tokSpan(tokensA[i] ?? "", i, tokensB[i] ?? "", metaA ? metaA[i] : null)).join("") +
+        `</div></div>`;
+
+      const rowB = `<div class="aligned-row"><span class="aligned-label">${escapeHtml(labelB)}</span><div class="aligned-tokens">` +
+        widths.map((_, i) => tokSpan(tokensB[i] ?? "", i, tokensA[i] ?? "", metaB ? metaB[i] : null)).join("") +
+        `</div></div>`;
+
+      targetEl.style.display = "block";
+      targetEl.innerHTML = rowA + rowB +
+        `<div class="aligned-legend">${escapeHtml(window.t("result.aligned_legend") || "Green = match, red = mismatch, · = missing token.")}</div>`;
+    }
+
+
+
+    function allTextOfDominoes(which) {
+      // which in {"top","bottom"}
+      return dominoes.map(d => (which === "top" ? d.top : d.bottom)).join("");
+    }
+
+    function indexSymbols(k, prefix) {
+      if (k <= 0) return [];
+      const res = [];
+      for (let i = 1; i <= k; i++) res.push(prefix + i);
+      return res;
+    }
+
+
+    function containsForbiddenAi(dominoesLocal) {
+      // We want a_i to be fresh terminals not appearing inside any t_i or b_i.
+      // For simplicity, we reject if any substring "a<number>" appears.
+      // (This is stricter than needed, but keeps the reduction clean in a teaching tool.)
+      const text = dominoesLocal.map(d => d.top + " " + d.bottom).join(" ");
+      return /a\d+/.test(text);
+    }
+
+    function csvEscape(value) {
+      const s = String(value ?? "");
+      if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    }
+
+    function parseCsv(text) {
+      // Minimal CSV: expects header domino_id,top_string,bottom_string (like tm2pcp export)
+      // Robust enough for quoted fields with commas.
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+      if (lines.length === 0) return [];
+
+      // parse a CSV line into fields
+      function parseLine(line) {
+        const out = [];
+        let cur = "";
+        let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (inQ) {
+            if (ch === '"') {
+              if (i + 1 < line.length && line[i + 1] === '"') {
+                cur += '"';
+                i++;
+              } else {
+                inQ = false;
+              }
+            } else {
+              cur += ch;
+            }
+          } else {
+            if (ch === '"') inQ = true;
+            else if (ch === ",") { out.push(cur); cur = ""; }
+            else cur += ch;
+          }
+        }
+        out.push(cur);
+        return out.map(s => s.trim());
+      }
+
+      const header = parseLine(lines[0]).map(h => h.toLowerCase());
+      const iTop = header.indexOf("top_string");
+      const iBottom = header.indexOf("bottom_string");
+      if (iTop < 0 || iBottom < 0) {
+        throw new Error(window.t("status.csv_bad_header"));
+      }
+
+      const res = [];
+      for (let i = 1; i < lines.length; i++) {
+        const f = parseLine(lines[i]);
+        const top = normalizeDominoString(f[iTop] ?? "");
+        const bottom = normalizeDominoString(f[iBottom] ?? "");
+        if (top.length === 0 && bottom.length === 0) continue;
+        res.push({ id: res.length + 1, top, bottom });
+      }
+      return res;
+    }
+
+    function collectDominoText(dominoesLocal) {
+      return dominoesLocal.map(d => (d.top ?? "") + " " + (d.bottom ?? "")).join(" ");
+    }
+
+    function tokenAppears(text, token) {
+      // literal substring match is fine for terminals-as-raw-strings UX
+      // we also check with a boundary-ish rule for prefix+digits patterns
+      return text.includes(token);
+    }
+
+    function prefixCollidesWithDigits(text, prefix) {
+      // collision means something like `${prefix}1`, `${prefix}23`, etc appears
+      // (use a simple regex; escape prefix for regex)
+      const esc = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(esc + "\\d+");
+      return re.test(text);
+    }
+
+    function chooseIndexPrefix(dominoesLocal) {
+      const text = collectDominoText(dominoesLocal);
+
+      // Ordered candidates: keep short ones first, then longer fallbacks
+      const candidates = [
+        "a", "A", "z", "x", "m", "q",
+        "_a", "_i", "idx", "id", "k",
+        "tag", "sym", "mark", "p",
+        "α", "β", "γ"
+      ];
+
+      // Try candidates, then add numbered variants if needed
+      for (const base of candidates) {
+        if (!prefixCollidesWithDigits(text, base)) return base;
+      }
+
+      // If somehow everything collides, generate base+"_" + randomish suffix deterministically
+      // (still stable across refreshes for same instance if based on length + content hash)
+      const seed = String(text.length) + ":" + text;
+      let h = 0;
+      for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+      for (let n = 0; n < 1000; n++) {
+        const base = "idx_" + ((h + n) % 100000).toString(36);
+        if (!prefixCollidesWithDigits(text, base)) return base;
+      }
+
+      // Last resort (extremely unlikely)
+      return "idx";
+    }
+
+
+
+    // -----------------------------
+    // Dark mode + language (tm2pcp-like)
+    // -----------------------------
+    function applyDarkModeFromStorage() {
+      const saved = localStorage.getItem("pcp2cfg-dark-mode");
+      const isDark = saved === "true";
+      document.body.classList.toggle("dark-mode", isDark);
+      refreshDarkModeSwitchUI();
+    }
+
+    function toggleDarkMode(enabled) {
+      document.body.classList.toggle("dark-mode", enabled);
+      localStorage.setItem("pcp2cfg-dark-mode", enabled ? "true" : "false");
+      refreshDarkModeSwitchUI();
+      // keep status color consistent
+      const txt = document.getElementById("status")?.textContent;
+      if (txt) showStatus(txt, false);
+    }
+
+    function getCurrentLang() {
+      const saved = localStorage.getItem("pcp2cfg-lang");
+      if (saved) return saved;
+      return document.documentElement.lang || "en";
+    }
+
+    function setCurrentLang(lang) {
+      localStorage.setItem("pcp2cfg-lang", lang);
+    }
+
+    function refreshLangSwitchUI() {
+      const lang = getCurrentLang();
+      const btn = document.getElementById("langSwitch");
+      const icon = document.getElementById("langIcon");
+      if (!btn || !icon) return;
+      const isPT = (lang === "pt-BR");
+      btn.setAttribute("aria-pressed", isPT ? "true" : "false");
+      icon.textContent = isPT ? "🇧🇷" : "🇬🇧";
+    }
+
+    function refreshDarkModeSwitchUI() {
+      const isDark = document.body.classList.contains("dark-mode");
+      const btn = document.getElementById("darkModeSwitch");
+      const icon = document.getElementById("darkModeIcon");
+      if (!btn || !icon) return;
+      btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+      icon.textContent = isDark ? "🌙" : "☀️";
+    }
+
+    // -----------------------------
+    // Help modal (tm2pcp-like)
+    // -----------------------------
+    function isHelpOpen() {
+      const ov = document.getElementById("helpOverlay");
+      return !!(ov && ov.classList.contains("open"));
+    }
+
+    function renderHelpModal() {
+      if (!currentHelpId) return;
+      const titleEl = document.getElementById("helpTitle");
+      const bodyEl = document.getElementById("helpBody");
+      if (!titleEl || !bodyEl || typeof window.t !== "function") return;
+
+      titleEl.textContent = window.t(`help.${currentHelpId}.title`);
+      bodyEl.innerHTML = window.t(`help.${currentHelpId}.body_html`);
+    }
+
+    window.refreshHelpModal = function refreshHelpModal() {
+      if (isHelpOpen()) renderHelpModal();
+    };
+
+    function openHelp(helpId) {
+      const ov = document.getElementById("helpOverlay");
+      if (!ov) return;
+      currentHelpId = helpId;
+      renderHelpModal();
+      ov.classList.add("open");
+      ov.setAttribute("aria-hidden", "false");
+      document.body.classList.add("help-open");
+
+      const closeBtn = document.getElementById("helpCloseBtn");
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function closeHelp() {
+      const ov = document.getElementById("helpOverlay");
+      if (!ov) return;
+      ov.classList.remove("open");
+      ov.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("help-open");
+      currentHelpId = null;
+    }
+
+    document.addEventListener("click", (ev) => {
+      const target = ev.target;
+      const btn = target && (target.closest ? target.closest(".help-btn") : null);
+      if (btn && btn.dataset && btn.dataset.help) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        openHelp(btn.dataset.help);
+        return;
+      }
+      const closeBtn = target && (target.closest ? target.closest("#helpCloseBtn") : null);
+      if (closeBtn) {
+        ev.preventDefault();
+        closeHelp();
+        return;
+      }
+      const overlay = document.getElementById("helpOverlay");
+      if (overlay && target === overlay && isHelpOpen()) closeHelp();
+    });
+
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && isHelpOpen()) {
+        ev.preventDefault();
+        closeHelp();
+      }
+    });
+
+    // -----------------------------
+    // Domino editor rendering
+    // -----------------------------
+    function moveDomino(fromIdx, toIdx) {
+      if (fromIdx === toIdx) return;
+      if (fromIdx < 0 || fromIdx >= dominoes.length) return;
+      if (toIdx < 0 || toIdx >= dominoes.length) return;
+
+      const [item] = dominoes.splice(fromIdx, 1);
+      dominoes.splice(toIdx, 0, item);
+
+      // Reassign ids 1..k (since the reduction uses i=1..k)
+      dominoes = dominoes.map((x, idx) => ({ id: idx + 1, top: x.top, bottom: x.bottom }));
+      onDominoesChanged(true);
+    }
+
+    function createChipEditor(initialValue, onChange) {
+      const container = document.createElement("div");
+      container.className = "chip-editor";
+
+      const tokens = tokenize(initialValue);
+
+      function renderChips() {
+        container.innerHTML = "";
+        tokens.forEach((tok, i) => {
+          const chip = document.createElement("span");
+          chip.className = "tok-chip";
+          chip.textContent = tok;
+
+          const del = document.createElement("span");
+          del.className = "tok-del";
+          del.textContent = "×";
+          del.onclick = (e) => {
+            e.stopPropagation();
+            tokens.splice(i, 1);
+            renderChips();
+            onChange(tokens.join(" "));
+          };
+
+          chip.appendChild(del);
+          container.appendChild(chip);
+        });
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "chip-input";
+        input.placeholder = tokens.length === 0 ? "add..." : "";
+
+        input.addEventListener("keydown", (e) => {
+          if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            const val = input.value.trim();
+            if (val) {
+              tokens.push(val);
+              renderChips();
+              onChange(tokens.join(" "));
+              // focus comes back to new input automatically
+              setTimeout(() => container.querySelector("input").focus(), 0);
+            }
+          } else if (e.key === "Backspace" && input.value === "" && tokens.length > 0) {
+            tokens.pop();
+            renderChips();
+            onChange(tokens.join(" "));
+            setTimeout(() => container.querySelector("input").focus(), 0);
+          }
+        });
+
+        input.addEventListener("blur", () => {
+          const val = input.value.trim();
+          if (val) {
+            tokens.push(val);
+            renderChips();
+            onChange(tokens.join(" "));
+          }
+        });
+
+        container.appendChild(input);
+      }
+
+      renderChips();
+
+      // Allow clicking container to focus input
+      container.addEventListener("click", (e) => {
+        if (e.target === container) {
+          const inp = container.querySelector("input");
+          if (inp) inp.focus();
+        }
+      });
+
+      return container;
+    }
+
+    let dragFromIndex = null;
+
+    function renderDominoPalette() {
+      const palette = document.getElementById("dominoPalette");
+      palette.innerHTML = "";
+
+      for (let idx = 0; idx < dominoes.length; idx++) {
+        const d = dominoes[idx];
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "pcp-domino-item";
+
+        // Label ABOVE tile
+        const label = document.createElement("div");
+        label.className = "chip mono pcp-domino-label";
+        label.dataset.dominoId = String(d.id);
+        const prefix = chooseIndexPrefix(dominoes);
+        label.textContent = `i=${d.id}  |  ${prefix}${d.id}`;
+        wrapper.appendChild(label);
+
+
+        // Allow adding to workspace by double-click (tm2pcp-like)
+        label.setAttribute("draggable", "true");
+        label.addEventListener("dragstart", (ev) => {
+          ev.dataTransfer.effectAllowed = "move";
+          ev.dataTransfer.setData("text/plain", String(d.id));
+        });
+        label.addEventListener("dblclick", () => addToWorkspace(d.id));
+        // Tile (draggable)
+        const tile = document.createElement("div");
+        tile.className = "pcp-domino-tile";
+        tile.setAttribute("draggable", "true");
+        tile.dataset.index = String(idx);
+
+
+        tile.addEventListener("dblclick", (ev) => {
+          // avoid double-click on input selecting text; still add to workspace
+          addToWorkspace(d.id);
+        });
+
+        // Hover handlers for domino ↔ grammar rule highlighting
+        tile.addEventListener("mouseenter", () => {
+          highlightGrammarRulesForDomino(d.id, true);
+        });
+        tile.addEventListener("mouseleave", () => {
+          highlightGrammarRulesForDomino(d.id, false);
+        });
+
+        // Top area
+        const topBox = document.createElement("div");
+        topBox.className = "pcp-domino-top";
+        const topEditor = createChipEditor(d.top, (newVal) => {
+          d.top = normalizeDominoString(newVal);
+          clearDerivedDueToDominoEdit();
+          scheduleGrammarRefresh();
+          // No full re-render here to keep focus
+        });
+        topBox.appendChild(topEditor);
+        tile.appendChild(topBox);
+
+        // Bottom area
+        const bottomBox = document.createElement("div");
+        bottomBox.className = "pcp-domino-bottom";
+        const bottomEditor = createChipEditor(d.bottom, (newVal) => {
+          d.bottom = normalizeDominoString(newVal);
+          clearDerivedDueToDominoEdit();
+          scheduleGrammarRefresh();
+        });
+        bottomBox.appendChild(bottomEditor);
+        tile.appendChild(bottomBox);
+
+        // Drag & drop reorder
+        tile.addEventListener("dragstart", (ev) => {
+          dragFromIndex = idx;
+          tile.classList.add("dragging");
+          ev.dataTransfer.effectAllowed = "move";
+          // allow dropping into Workspace
+          ev.dataTransfer.setData("text/plain", String(d.id));
+        });
+        tile.addEventListener("dragend", () => {
+          tile.classList.remove("dragging");
+          dragFromIndex = null;
+          palette.querySelectorAll(".pcp-domino-tile.dragover").forEach(el => el.classList.remove("dragover"));
+        });
+
+        tile.addEventListener("dragover", (ev) => {
+          ev.preventDefault();
+          tile.classList.add("dragover");
+          ev.dataTransfer.dropEffect = "move";
+        });
+        tile.addEventListener("dragleave", () => tile.classList.remove("dragover"));
+
+        tile.addEventListener("drop", (ev) => {
+          ev.preventDefault();
+          tile.classList.remove("dragover");
+          const to = idx;
+          if (dragFromIndex != null && dragFromIndex !== to) moveDomino(dragFromIndex, to);
+        });
+
+        wrapper.appendChild(tile);
+
+        // Action buttons (accessible reorder)
+        const actions = document.createElement("div");
+        actions.className = "pcp-domino-actions";
+
+        const upBtn = document.createElement("button");
+        upBtn.className = "pcp-mini-btn";
+        upBtn.textContent = "↑";
+        upBtn.title = window.t("button.move_up") || "Move up";
+        upBtn.disabled = (idx === 0);
+        upBtn.addEventListener("click", () => moveDomino(idx, idx - 1));
+
+        const downBtn = document.createElement("button");
+        downBtn.className = "pcp-mini-btn";
+        downBtn.textContent = "↓";
+        downBtn.title = window.t("button.move_down") || "Move down";
+        downBtn.disabled = (idx === dominoes.length - 1);
+        downBtn.addEventListener("click", () => moveDomino(idx, idx + 1));
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "pcp-mini-btn";
+        delBtn.textContent = window.t("button.delete");
+        delBtn.addEventListener("click", () => {
+          dominoes.splice(idx, 1);
+          dominoes = dominoes.map((x, i) => ({ id: i + 1, top: x.top, bottom: x.bottom }));
+          onDominoesChanged(true);
+        });
+
+        actions.appendChild(upBtn);
+        actions.appendChild(downBtn);
+        actions.appendChild(delBtn);
+
+        wrapper.appendChild(actions);
+        palette.appendChild(wrapper);
+      }
+
+      // Summary
+      const k = dominoes.length;
+      document.getElementById("kCount").textContent = String(k);
+
+      const prefix = chooseIndexPrefix(dominoes);
+      //const ai = indexSymbols(k, prefix);
+      //document.getElementById("aiSummary").textContent = ai.length ? ai.join(", ") : "∅";
+
+      const prefixSpan = document.getElementById("aiPrefix");
+      if (prefixSpan) prefixSpan.textContent = prefix || "–";
+      //document.getElementById("aiSummary").textContent = ai.length ? ai.join(", ") : "∅";
+
+
+
+
+    }
+
+    // -----------------------------
+    // Workspace (sequence of dominoes)
+    // -----------------------------
+    function setWorkspaceWrapMode(enabled) {
+      const cs = document.getElementById("concatStrings");
+      if (cs) {
+        cs.classList.toggle("wrap-on", enabled);
+      }
+    }
+
+    function setDerivationWrapMode(enabled) {
+      const da = document.getElementById("derivationsAligned");
+      if (da) {
+        da.classList.toggle("wrap-on", enabled);
+      }
+    }
+
+    function workspaceToSequenceString(seq) {
+      return seq.join(",");
+    }
+
+    function sequenceStringToWorkspace(s) {
+      const seq = parseIndexSequence(s);
+      if (seq === null) return null;
+      return seq;
+    }
+
+    /**
+     * Called when dominoes are replaced (CSV import, clear, load example).
+     * Clears all derived state: workspace, solver, CFG, and derivation trees.
+     */
+    function resetDerivedState() {
+      // 1. Cancel solver if running
+      if (solverWorker) {
+        cancelSolver();
+      }
+
+      // 2. Clear solver UI
+      setSolverResultText("");
+      setSolverProgressText("");
+      lastSolverSolution = null;
+      const loadBtn = document.getElementById("loadSolutionBtn");
+      if (loadBtn) loadBtn.disabled = true;
+
+      // 3. Clear workspace
+      workspaceSeq = [];
+      renderWorkspace();
+      concatWorkspaceStrings();
+
+      // 4. Clear derivation explorer
+      document.getElementById("seqInput").value = "";
+      clearDerivationsUI();
+    }
+
+    function clearWorkspace() {
+      workspaceSeq = [];
+      renderWorkspace();
+      concatWorkspaceStrings();
+    }
+
+    function clearDerivationsUI() {
+      const da = document.getElementById("derivationsAligned");
+      if (da) { da.innerHTML = ""; da.style.display = "none"; }
+      const matchLine = document.getElementById("matchLine");
+      if (matchLine) matchLine.innerHTML = "";
+      const treeT = document.getElementById("treeT");
+      if (treeT) treeT.innerHTML = "";
+      const treeB = document.getElementById("treeB");
+      if (treeB) treeB.innerHTML = "";
+      initBaseTrees();
+    }
+
+    function concatWorkspaceStrings() {
+      const cs = document.getElementById("concatStrings");
+      if (!cs) return;
+
+      if (workspaceSeq.length === 0) {
+        cs.innerHTML = "";
+        return;
+      }
+
+      const topTokens = [];
+      const bottomTokens = [];
+      const topMeta = [];
+      const bottomMeta = [];
+      for (let pos = 0; pos < workspaceSeq.length; pos++) {
+        const idx = workspaceSeq[pos];
+        const dom = dominoes[idx - 1];
+        if (!dom) continue; // skip missing domino safely
+        const tksTop = tokenize(dom.top);
+        const tksBottom = tokenize(dom.bottom);
+        const occurrence = `${pos}-${idx}`;
+        topTokens.push(...tksTop);
+        bottomTokens.push(...tksBottom);
+        tksTop.forEach(() => topMeta.push({ dominoId: idx, occurrence }));
+        tksBottom.forEach(() => bottomMeta.push({ dominoId: idx, occurrence }));
+      }
+
+      // Render aligned token rows (easier visual comparison)
+      cs.innerHTML = `<div class="aligned-compare" id="wsAligned"></div><div id="wsMatchStatus" style="margin-top:0.5rem; font-size:0.9rem;"></div>`;
+      const inner = cs.querySelector("#wsAligned");
+      renderAlignedCompare(inner, window.t("workspace.top") || "Top", topTokens,
+        window.t("workspace.bottom") || "Bottom", bottomTokens, topMeta, bottomMeta);
+
+      // Match check logic: Compare TOKENS first (strict match)
+      let match = (topTokens.length === bottomTokens.length);
+      if (match) {
+        for (let i = 0; i < topTokens.length; i++) {
+          if (topTokens[i] !== bottomTokens[i]) {
+            match = false;
+            break;
+          }
+        }
+      }
+
+      const topStr = topTokens.join("");
+      const bottomStr = bottomTokens.join("");
+      const topChars = topStr.replace(/ /g, "");
+      const bottomChars = bottomStr.replace(/ /g, "");
+      const weakMatch = !match && (topChars === bottomChars);
+
+      const statusDiv = cs.querySelector("#wsMatchStatus");
+      if (match) {
+        statusDiv.innerHTML = `<span class="good"><strong>${escapeHtml(window.t("result.match_yes_pcp"))}</strong></span> ${escapeHtml(window.t("result.match_explain_yes_pcp"))}`;
+      } else if (weakMatch) {
+        statusDiv.innerHTML = `<span class="warn"><strong>${escapeHtml(window.t("result.match_weak"))}</strong></span> ${escapeHtml(window.t("result.match_explain_weak_pcp"))}`;
+      } else {
+        statusDiv.innerHTML = `<span class="danger"><strong>${escapeHtml(window.t("result.match_no_pcp"))}</strong></span> ${escapeHtml(window.t("result.match_explain_no_pcp"))}`;
+      }
+
+      if (typeof window.applyI18n === "function") window.applyI18n();
+    }
+
+    function highlightWorkspaceTokens(dominoId, occurrence, highlight) {
+      const aligned = document.getElementById("wsAligned");
+      if (!aligned) return;
+      aligned.querySelectorAll(`.tok[data-domino-id="${dominoId}"][data-occurrence="${occurrence}"]`).forEach(tok => {
+        tok.classList.toggle("highlight", highlight);
+      });
+    }
+
+    function renderWorkspace() {
+      const ws = document.getElementById("workspace");
+      if (!ws) return;
+      ws.innerHTML = "";
+
+      let wsDragFrom = null;
+
+      const prefix = chooseIndexPrefix(dominoes);
+
+      workspaceSeq.forEach((dominoIdx, pos) => {
+        const d = dominoes[dominoIdx - 1];
+        if (!d) return;
+
+        const wrap = document.createElement("div");
+        wrap.className = "pcp-domino-item";
+
+        const label = document.createElement("div");
+        label.className = "chip mono pcp-domino-label";
+        label.textContent = `${pos + 1}: i=${dominoIdx}`;
+        wrap.appendChild(label);
+
+        const tile = document.createElement("div");
+        tile.className = "pcp-domino-tile ws-domino";
+        tile.setAttribute("draggable", "true");
+
+        const topBox = document.createElement("div");
+        topBox.className = "pcp-domino-top";
+        // Render tokens as chips
+        const tTokens = tokenize(d.top || "");
+        if (tTokens.length === 0) {
+          topBox.textContent = "ε";
+        } else {
+          tTokens.forEach(tk => {
+            const sp = document.createElement("span");
+            sp.className = "tok-chip"; // reuse same visual style
+            sp.textContent = tk;
+            topBox.appendChild(sp);
+          });
+        }
+        tile.appendChild(topBox);
+
+        const bottomBox = document.createElement("div");
+        bottomBox.className = "pcp-domino-bottom";
+        const bTokens = tokenize(d.bottom || "");
+        if (bTokens.length === 0) {
+          bottomBox.textContent = "ε";
+        } else {
+          bTokens.forEach(tk => {
+            const sp = document.createElement("span");
+            sp.className = "tok-chip";
+            sp.textContent = tk;
+            bottomBox.appendChild(sp);
+          });
+        }
+        tile.appendChild(bottomBox);
+
+        tile.addEventListener("dragstart", (ev) => {
+          wsDragFrom = pos;
+          tile.classList.add("dragging");
+          ev.dataTransfer.effectAllowed = "move";
+          // Mark this as an internal workspace drag so the workspace container drop handler
+          // won't treat it as "add new tile".
+          ev.dataTransfer.setData("application/x-ws-from", String(pos));
+          ev.dataTransfer.setData("text/plain", String(dominoIdx));
+        });
+        tile.addEventListener("dragend", () => {
+          tile.classList.remove("dragging");
+          wsDragFrom = null;
+          ws.querySelectorAll(".ws-domino.dragover").forEach(el => el.classList.remove("dragover"));
+        });
+        tile.addEventListener("dragover", (ev) => {
+          ev.preventDefault();
+          tile.classList.add("dragover");
+          ev.dataTransfer.dropEffect = "move";
+        });
+        tile.addEventListener("dragleave", () => tile.classList.remove("dragover"));
+        tile.addEventListener("drop", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation(); // prevent bubbling to #workspace drop handler
+          tile.classList.remove("dragover");
+          if (wsDragFrom == null) return;
+          const to = pos;
+          if (to === wsDragFrom) return;
+          const [it] = workspaceSeq.splice(wsDragFrom, 1);
+          workspaceSeq.splice(to, 0, it);
+          renderWorkspace();
+          concatWorkspaceStrings();
+        });
+
+        wrap.appendChild(tile);
+
+        const actions = document.createElement("div");
+        actions.className = "ws-actions";
+
+        const del = document.createElement("button");
+        del.className = "ws-mini-btn";
+        del.textContent = "✕";
+        del.title = window.t("button.delete") || "Delete";
+        del.addEventListener("click", () => {
+          workspaceSeq.splice(pos, 1);
+          renderWorkspace();
+          concatWorkspaceStrings();
+        });
+
+        actions.appendChild(del);
+        wrap.appendChild(actions);
+
+        ws.appendChild(wrap);
+
+        // Highlight tokens in workspace strings on hover
+        const occurrence = `${pos}-${dominoIdx}`;
+        const hoverOn = () => highlightWorkspaceTokens(dominoIdx, occurrence, true);
+        const hoverOff = () => highlightWorkspaceTokens(dominoIdx, occurrence, false);
+        wrap.addEventListener("mouseenter", hoverOn);
+        wrap.addEventListener("mouseleave", hoverOff);
+        tile.addEventListener("mouseenter", hoverOn);
+        tile.addEventListener("mouseleave", hoverOff);
+        label.addEventListener("mouseenter", hoverOn);
+        label.addEventListener("mouseleave", hoverOff);
+      });
+    }
+
+    function sendWorkspaceToSeqInput() {
+      const seqEl = document.getElementById("seqInput");
+      if (!seqEl) return;
+      seqEl.value = ""; // clear destination first
+      seqEl.value = workspaceToSequenceString(workspaceSeq);
+      // Clear any previous derivations (to avoid mismatch confusion)
+      setStatusFromKey("status.workspace_to_seq", {}, false);
+    }
+
+    function sendSeqInputToWorkspace() {
+      const seqEl = document.getElementById("seqInput");
+      if (!seqEl) return;
+      const seq = sequenceStringToWorkspace(seqEl.value);
+      if (seq === null) {
+        setStatusFromKey("status.bad_sequence", {}, true);
+        return;
+      }
+      // Validate indices
+      const k = dominoes.length;
+      for (const idx of seq) {
+        if (idx < 1 || idx > k) {
+          setStatusFromKey("status.sequence_out_of_range", { K: k }, true);
+          return;
+        }
+      }
+      // Clear destination first
+      workspaceSeq = [];
+      workspaceSeq = seq.slice();
+      renderWorkspace();
+      concatWorkspaceStrings();
+      setStatusFromKey("status.seq_to_workspace", {}, false);
+    }
+
+
+    // -----------------------------
+    // Grammar construction (the reduction)
+    // -----------------------------
+    function buildGrammarText() {
+      const k = dominoes.length;
+      if (k === 0) return window.t("grammar.empty");
+
+      const prefix = chooseIndexPrefix(dominoes);
+
+      const lines = [];
+      lines.push("S -> T | B");
+
+      const tTok = (i) => tokenize(dominoes[i - 1].top);
+      const bTok = (i) => tokenize(dominoes[i - 1].bottom);
+      const aiTok = (i) => [prefix + i];
+
+      const tParts = [];
+      for (let i = 1; i <= k; i++) {
+        const rhs = [...tTok(i), "T", ...aiTok(i)];
+        tParts.push(tokensToDisplay(rhs));
+      }
+      for (let i = 1; i <= k; i++) {
+        const rhs = [...tTok(i), ...aiTok(i)];
+        tParts.push(tokensToDisplay(rhs));
+      }
+      lines.push("T -> " + tParts.join(" | "));
+
+      const bParts = [];
+      for (let i = 1; i <= k; i++) {
+        const rhs = [...bTok(i), "B", ...aiTok(i)];
+        bParts.push(tokensToDisplay(rhs));
+      }
+      for (let i = 1; i <= k; i++) {
+        const rhs = [...bTok(i), ...aiTok(i)];
+        bParts.push(tokensToDisplay(rhs));
+      }
+      lines.push("B -> " + bParts.join(" | "));
+
+      lines.push("");
+      lines.push(`# index symbols: ${prefix}1, ${prefix}2, ..., ${prefix}${k}`);
+
+      return lines.join("\n");
+    }
+
+
+    function refreshGrammarBox() {
+      const box = document.getElementById("grammarBox");
+      if (!box) return;
+
+      // Clear existing content
+      box.innerHTML = "";
+
+      // Build and append new interactive grammar
+      const grammarHTML = buildGrammarHTML();
+      box.appendChild(grammarHTML);
+    }
+
+    // Build interactive grammar HTML with hover support
+    function buildGrammarHTML() {
+      const k = dominoes.length;
+      if (k === 0) {
+        const container = document.createElement("div");
+        container.className = "grammar-empty";
+        container.textContent = window.t("grammar.empty");
+        return container;
+      }
+
+      const prefix = chooseIndexPrefix(dominoes);
+      const container = document.createElement("div");
+
+      const tTok = (i) => tokenize(dominoes[i - 1].top);
+      const bTok = (i) => tokenize(dominoes[i - 1].bottom);
+      const aiTok = (i) => prefix + i;
+
+      // Helper to create a grammar term/nonterm element
+      function createGrammarSymbol(text, isNonTerm, isIndex = false) {
+        const span = document.createElement("span");
+        if (isIndex) {
+          span.className = "grammar-term grammar-index-symbol";
+        } else if (isNonTerm) {
+          span.className = "grammar-nonterm";
+        } else {
+          span.className = "grammar-term";
+        }
+        span.textContent = text;
+        return span;
+      }
+
+      // Helper to create an alternative (RHS part)
+      function createAlternative(tokens, nonterm, indexSym, dominoId, ruleType) {
+        const alt = document.createElement("span");
+        alt.className = "grammar-alternative";
+        alt.dataset.dominoId = String(dominoId);
+        alt.dataset.ruleType = ruleType; // "T" or "B"
+        alt.dataset.ruleKind = nonterm ? "recursive" : "base";
+        alt.dataset.ruleTokens = JSON.stringify(tokens);
+        alt.dataset.ruleHasNonterm = nonterm ? "1" : "0";
+        alt.dataset.ruleIndexSym = indexSym;
+        alt.dataset.ruleSignature = ruleSignature(ruleType, tokens, !!nonterm, indexSym);
+
+        tokens.forEach(tok => {
+          alt.appendChild(createGrammarSymbol(tok, false));
+          const space = document.createTextNode(" ");
+          alt.appendChild(space);
+        });
+
+        if (nonterm) {
+          alt.appendChild(createGrammarSymbol(nonterm, true));
+          const space = document.createTextNode(" ");
+          alt.appendChild(space);
+        }
+
+        alt.appendChild(createGrammarSymbol(indexSym, false, true));
+
+        return alt;
+      }
+
+      // Rule S -> T | B
+      const sRule = document.createElement("div");
+      sRule.className = "grammar-rule grammar-section";
+      const sLhs = document.createElement("span");
+      sLhs.className = "grammar-lhs";
+      sLhs.textContent = "S";
+      sRule.appendChild(sLhs);
+      sRule.appendChild(document.createTextNode(" → "));
+      const sRhs = document.createElement("span");
+      sRhs.className = "grammar-rhs";
+      sRhs.appendChild(createGrammarSymbol("T", true));
+      sRhs.appendChild(document.createTextNode(" | "));
+      sRhs.appendChild(createGrammarSymbol("B", true));
+      sRule.appendChild(sRhs);
+      container.appendChild(sRule);
+
+      // Rule T -> ...
+      const tRule = document.createElement("div");
+      tRule.className = "grammar-rule grammar-section";
+      const tLhs = document.createElement("span");
+      tLhs.className = "grammar-lhs";
+      tLhs.textContent = "T";
+      tRule.appendChild(tLhs);
+      tRule.appendChild(document.createTextNode(" → "));
+      const tRhs = document.createElement("span");
+      tRhs.className = "grammar-rhs";
+
+      // T recursive rules (t_i T a_i)
+      for (let i = 1; i <= k; i++) {
+        if (i > 1) {
+          const sep = document.createElement("span");
+          sep.className = "grammar-alt-separator";
+          sep.textContent = "|";
+          tRhs.appendChild(sep);
+        }
+        tRhs.appendChild(createAlternative(tTok(i), "T", aiTok(i), i, "T"));
+      }
+
+      // T base rules (t_i a_i)
+      if (k > 0) {
+        const sep = document.createElement("span");
+        sep.className = "grammar-alt-separator";
+        sep.textContent = "|";
+        tRhs.appendChild(sep);
+      }
+      for (let i = 1; i <= k; i++) {
+        if (i > 1) {
+          const sep = document.createElement("span");
+          sep.className = "grammar-alt-separator";
+          sep.textContent = "|";
+          tRhs.appendChild(sep);
+        }
+        tRhs.appendChild(createAlternative(tTok(i), null, aiTok(i), i, "T"));
+      }
+
+      tRule.appendChild(tRhs);
+      container.appendChild(tRule);
+
+      // Rule B -> ...
+      const bRule = document.createElement("div");
+      bRule.className = "grammar-rule grammar-section";
+      const bLhs = document.createElement("span");
+      bLhs.className = "grammar-lhs";
+      bLhs.textContent = "B";
+      bRule.appendChild(bLhs);
+      bRule.appendChild(document.createTextNode(" → "));
+      const bRhs = document.createElement("span");
+      bRhs.className = "grammar-rhs";
+
+      // B recursive rules (b_i B a_i)
+      for (let i = 1; i <= k; i++) {
+        if (i > 1) {
+          const sep = document.createElement("span");
+          sep.className = "grammar-alt-separator";
+          sep.textContent = "|";
+          bRhs.appendChild(sep);
+        }
+        bRhs.appendChild(createAlternative(bTok(i), "B", aiTok(i), i, "B"));
+      }
+
+      // B base rules (b_i a_i)
+      if (k > 0) {
+        const sep = document.createElement("span");
+        sep.className = "grammar-alt-separator";
+        sep.textContent = "|";
+        bRhs.appendChild(sep);
+      }
+      for (let i = 1; i <= k; i++) {
+        if (i > 1) {
+          const sep = document.createElement("span");
+          sep.className = "grammar-alt-separator";
+          sep.textContent = "|";
+          bRhs.appendChild(sep);
+        }
+        bRhs.appendChild(createAlternative(bTok(i), null, aiTok(i), i, "B"));
+      }
+
+      bRule.appendChild(bRhs);
+      container.appendChild(bRule);
+
+      // Footer with index symbols info
+      const footer = document.createElement("div");
+      footer.className = "grammar-footer";
+      footer.textContent = `# index symbols: ${prefix}1, ${prefix}2, ..., ${prefix}${k}`;
+      container.appendChild(footer);
+
+      // Add hover handlers to grammar alternatives
+      container.querySelectorAll(".grammar-alternative").forEach(alt => {
+        const dominoId = parseInt(alt.dataset.dominoId, 10);
+        if (!Number.isFinite(dominoId)) return;
+
+        alt.addEventListener("mouseenter", () => {
+          highlightGrammarRulesForDomino(dominoId, true);
+          highlightDominoInPalette(dominoId, true);
+        });
+
+        alt.addEventListener("mouseleave", () => {
+          highlightGrammarRulesForDomino(dominoId, false);
+          highlightDominoInPalette(dominoId, false);
+        });
+
+        alt.addEventListener("click", () => {
+          handleGrammarRuleClick(alt);
+        });
+      });
+
+      return container;
+    }
+
+    function highlightGrammarAlternative(dominoId, signature, highlight) {
+      const grammarBox = document.getElementById("grammarBox");
+      if (!grammarBox) return;
+      const sRule = Array.from(grammarBox.querySelectorAll(".grammar-rule")).find(r => {
+        const lhs = r.querySelector(".grammar-lhs");
+        return lhs && lhs.textContent.trim() === "S";
+      });
+
+      grammarBox.querySelectorAll(".grammar-alternative").forEach(alt => {
+        if (signature === "S-rule") {
+          alt.classList.toggle("highlight", false); // only S rule handled separately
+          return;
+        }
+        const matchesSig = signature && alt.dataset.ruleSignature === signature;
+        const matchesDomino = dominoId && parseInt(alt.dataset.dominoId, 10) === dominoId;
+        if (signature) {
+          alt.classList.toggle("highlight", highlight && matchesSig);
+        } else if (dominoId) {
+          alt.classList.toggle("highlight", highlight && matchesDomino);
+        }
+      });
+      grammarBox.querySelectorAll(".grammar-rule").forEach(rule => {
+        const hasHighlighted = rule.querySelector(".grammar-alternative.highlight");
+        rule.classList.toggle("highlight", hasHighlighted !== null);
+      });
+
+      // Special case for S -> T | B
+      if (sRule && signature === "S-rule") {
+        sRule.classList.toggle("highlight", highlight);
+        const rhsSyms = sRule.querySelectorAll(".grammar-nonterm");
+        rhsSyms.forEach(el => el.classList.toggle("highlight", highlight));
+      }
+    }
+
+    // Highlight grammar rules that correspond to a domino
+    function highlightGrammarRulesForDomino(dominoId, highlight) {
+      const grammarBox = document.getElementById("grammarBox");
+      if (!grammarBox) return;
+
+      grammarBox.querySelectorAll(`.grammar-alternative[data-domino-id="${dominoId}"]`).forEach(alt => {
+        alt.classList.toggle("highlight", highlight);
+      });
+
+      // Also highlight parent rule if any alternative is highlighted
+      const rules = grammarBox.querySelectorAll(".grammar-rule");
+      rules.forEach(rule => {
+        const hasHighlighted = rule.querySelector(".grammar-alternative.highlight");
+        rule.classList.toggle("highlight", hasHighlighted !== null);
+      });
+    }
+
+    // Highlight domino in palette when hovering over grammar rule
+    function highlightDominoInPalette(dominoId, highlight) {
+      const palette = document.getElementById("dominoPalette");
+      if (!palette) return;
+
+      // Find the domino item by data-domino-id or by index
+      const labels = palette.querySelectorAll(`.pcp-domino-label[data-domino-id="${dominoId}"]`);
+      labels.forEach(label => {
+        const wrapper = label.closest(".pcp-domino-item");
+        if (wrapper) {
+          const tile = wrapper.querySelector(".pcp-domino-tile");
+          if (tile) {
+            if (highlight) {
+              tile.style.borderColor = "var(--primary)";
+              tile.style.borderWidth = "3px";
+              tile.style.boxShadow = "0 0 0 4px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(59, 130, 246, 0.25)";
+              tile.style.transform = "scale(1.02)";
+              tile.style.zIndex = "10";
+            } else {
+              tile.style.borderColor = "";
+              tile.style.borderWidth = "";
+              tile.style.boxShadow = "";
+              tile.style.transform = "";
+              tile.style.zIndex = "";
+            }
+          }
+        }
+      });
+    }
+
+    // -----------------------------
+    // Derivation builder (sequence i1..in)
+    // -----------------------------
+    function parseIndexSequence(s) {
+      const raw = String(s ?? "").trim();
+      if (raw.length === 0) return [];
+      const parts = raw.split(/[\s,;]+/).filter(x => x.length > 0);
+      const out = [];
+      for (const p of parts) {
+        const n = parseInt(p, 10);
+        if (!Number.isFinite(n) || n <= 0) return null;
+        out.push(n);
+      }
+      return out;
+    }
+
+    function deriveWordVia(which, seq) {
+      const idxPrefix = chooseIndexPrefix(dominoes);
+
+      let leftTokens = [];
+      for (const idx of seq) {
+        const dom = dominoes[idx - 1];
+        if (!dom) continue;
+        const sideTokens = tokenize(which === "T" ? dom.top : dom.bottom);
+        leftTokens = leftTokens.concat(sideTokens);
+      }
+
+      let rightTokens = [];
+      for (let j = seq.length - 1; j >= 0; j--) {
+        rightTokens.push(idxPrefix + seq[j]);
+      }
+
+      return tokensToDisplay(leftTokens.concat(rightTokens));
+    }
+
+
+    function concatTopBottom(seq) {
+      const topTokens = [];
+      const bottomTokens = [];
+      for (const idx of seq) {
+        const d = dominoes[idx - 1];
+        if (!d) continue;
+        topTokens.push(...tokenize(d.top));
+        bottomTokens.push(...tokenize(d.bottom));
+      }
+      return { topTokens, bottomTokens };
+    }
+
+    function newNodeId(which) {
+      nodeIdCounterGlobal += 1;
+      return `node_${which}_${nodeIdCounterGlobal}`;
+    }
+
+    function ruleSignature(ruleType, tokens, hasNonterm, indexSym) {
+      return [ruleType || "", (hasNonterm ? "1" : "0"), indexSym || "", ...tokens].join("␞");
+    }
+
+    function makeTerm(which, label) {
+      return { label, kind: "term", children: [], id: newNodeId(which), ruleMeta: null };
+    }
+
+    function makeNonterm(which, label, children = []) {
+      return { label, kind: "nonterm", children, id: newNodeId(which), ruleMeta: null };
+    }
+
+    // Build a (deterministic) derivation tree for the chosen sequence.
+    // We render the “chain form” consistent with applying:
+    //   T -> t_i T a_i (repeated) then T -> t_i a_i (base)
+    function buildDerivationTree(which, seq) {
+      const root = makeNonterm(which, "S");
+      const top = makeNonterm(which, which);
+      root.children.push(top);
+
+      function buildChain(pos) {
+        const idx = seq[pos];
+        const d = dominoes[idx - 1];
+        const leftStr = (which === "T" ? d.top : d.bottom);
+        const tokens = tokenize(leftStr);
+        const prefix = chooseIndexPrefix(dominoes);
+        const ai = prefix + idx;
+
+        const leftNodes = tokens.map(t => makeTerm(which, t));
+        const isLast = (pos === seq.length - 1);
+        const current = makeNonterm(which, which);
+
+        if (isLast) {
+          current.ruleMeta = { dominoId: idx, ruleType: which, ruleKind: "base", signature: ruleSignature(which, tokens, false, ai) };
+          current.children = [...leftNodes, makeTerm(which, ai)];
+          return current;
+        }
+
+        const nextNonterm = buildChain(pos + 1);
+        current.ruleMeta = { dominoId: idx, ruleType: which, ruleKind: "recursive", signature: ruleSignature(which, tokens, true, ai) };
+        current.children = [...leftNodes, nextNonterm, makeTerm(which, ai)];
+        return current;
+      }
+
+      if (seq.length > 0) {
+        const chain = buildChain(0);
+        top.ruleMeta = chain.ruleMeta;
+        top.children = chain.children;
+      } else {
+        top.children = [];
+      }
+      return root;
+    }
+
+    function applyTreeZoom(which) {
+      const container = document.getElementById(which === "T" ? "treeT" : "treeB");
+      if (!container) return;
+      const inner = container.querySelector(".tree");
+      if (!inner) return;
+      const z = treeZoom[which] || 1;
+      inner.style.transform = `scale(${z})`;
+      inner.style.transformOrigin = "top left";
+    }
+
+    function renderTree(containerEl, node, onHover, which, onExpand) {
+      // UL-based tree
+      function renderNode(n) {
+        const li = document.createElement("li");
+        const isNon = n.kind === "nonterm";
+        const div = document.createElement(isNon ? "button" : "span");
+        div.type = isNon ? "button" : undefined;
+        div.className = "node " + (isNon ? "nonterm nonterm-btn" : "term");
+        div.textContent = n.label;
+        div.dataset.nodeId = n.id;
+
+        // Interaction
+        div.addEventListener("mouseenter", () => {
+          div.classList.add("highlight");
+          if (onHover) onHover(n, true);
+        });
+        div.addEventListener("mouseleave", () => {
+          div.classList.remove("highlight");
+          if (onHover) onHover(n, false);
+        });
+
+        if (isNon && typeof onExpand === "function") {
+          div.addEventListener("click", () => onExpand(n.id, which));
+        }
+
+        li.appendChild(div);
+
+        if (n.children && n.children.length > 0) {
+          const ul = document.createElement("ul");
+          for (const ch of n.children) {
+            ul.appendChild(renderNode(ch));
+          }
+          li.appendChild(ul);
+        }
+        return li;
+      }
+
+      containerEl.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.className = "tree";
+      wrapper.style.display = "inline-block";
+      wrapper.style.width = "max-content";
+      const ul = document.createElement("ul");
+      ul.appendChild(renderNode(node));
+      wrapper.appendChild(ul);
+      containerEl.innerHTML = "";
+      containerEl.appendChild(wrapper);
+      if (which) applyTreeZoom(which);
+    }
+
+    function collectLeaves(node) {
+      if (!node.children || node.children.length === 0) {
+        return (node.kind === 'term') ? [node] : [];
+      }
+      let leaves = [];
+      for (const child of node.children) {
+        leaves = leaves.concat(collectLeaves(child));
+      }
+      return leaves;
+    }
+
+    function findNode(root, id) {
+      if (!root) return null;
+      if (root.id === id) return root;
+      if (!root.children) return null;
+      for (const ch of root.children) {
+        const r = findNode(ch, id);
+        if (r) return r;
+      }
+      return null;
+    }
+
+    function findFirstExpandable(which, label) {
+      const root = treeData[which];
+      if (!root) return null;
+      const queue = [root];
+      while (queue.length) {
+        const n = queue.shift();
+        if (n.kind === "nonterm" && n.label === label && (!n.children || n.children.length === 0)) {
+          return n;
+        }
+        if (n.children) queue.push(...n.children);
+      }
+      return null;
+    }
+
+    function baseTree(which) {
+      const root = makeNonterm(which, "S");
+      root.children = [makeNonterm(which, which)];
+      return root;
+    }
+
+    function initBaseTrees() {
+      if (!dominoes || dominoes.length === 0) {
+        treeData = { T: null, B: null };
+        const t = document.getElementById("treeT"); if (t) t.innerHTML = "";
+        const b = document.getElementById("treeB"); if (b) b.innerHTML = "";
+        const da = document.getElementById("derivationsAligned"); if (da) { da.innerHTML = ""; da.style.display = "none"; }
+        const matchLine = document.getElementById("matchLine"); if (matchLine) matchLine.innerHTML = "";
+        return;
+      }
+      treeData = { T: baseTree("T"), B: baseTree("B") };
+      renderCurrentTreesAndWords();
+    }
+
+    function ruleOptions(which, nontermLabel) {
+      const opts = [];
+      const prefix = chooseIndexPrefix(dominoes);
+      if (nontermLabel === "S") {
+        opts.push({ label: `S → ${which}`, children: [makeNonterm(which, which)], dominoId: null });
+        return opts;
+      }
+      if (nontermLabel !== "T" && nontermLabel !== "B") return opts;
+      const sideTokens = (i) => tokenize(nontermLabel === "T" ? dominoes[i - 1].top : dominoes[i - 1].bottom);
+      const ai = (i) => prefix + i;
+      for (let i = 1; i <= dominoes.length; i++) {
+        const toks = sideTokens(i).map(t => makeTerm(which, t));
+        opts.push({
+          label: `${nontermLabel} → ${tokensToDisplay(sideTokens(i))} ${nontermLabel} ${ai(i)}`,
+          children: [...toks, makeNonterm(which, nontermLabel), makeTerm(which, ai(i))],
+          dominoId: i,
+          signature: ruleSignature(nontermLabel, sideTokens(i), true, ai(i))
+        });
+      }
+      for (let i = 1; i <= dominoes.length; i++) {
+        const toks = sideTokens(i).map(t => makeTerm(which, t));
+        opts.push({
+          label: `${nontermLabel} → ${tokensToDisplay(sideTokens(i))} ${ai(i)}`,
+          children: [...toks, makeTerm(which, ai(i))],
+          dominoId: i,
+          signature: ruleSignature(nontermLabel, sideTokens(i), false, ai(i))
+        });
+      }
+      return opts;
+    }
+
+    function handleExpand(nodeId, which) {
+      const root = treeData[which];
+      if (!root) return;
+      const target = findNode(root, nodeId);
+      if (!target || target.kind !== "nonterm") return;
+      const opts = ruleOptions(which, target.label);
+      if (!opts.length) return;
+      openRulePicker(which, target, opts);
+    }
+
+    function handleGrammarRuleClick(alt) {
+      if (!alt || !alt.dataset) return;
+      const which = alt.dataset.ruleType;
+      if (!which || !treeData) return;
+      if (!treeData[which]) {
+        initBaseTrees();
+        if (!treeData[which]) return;
+      }
+      const target = findFirstExpandable(which, which);
+      if (!target) return;
+
+      const tokens = JSON.parse(alt.dataset.ruleTokens || "[]");
+      const hasNonterm = alt.dataset.ruleHasNonterm === "1";
+      const idxSym = alt.dataset.ruleIndexSym || "";
+      const children = [];
+      tokens.forEach(t => children.push(makeTerm(which, t)));
+      if (hasNonterm) children.push(makeNonterm(which, which));
+      if (idxSym) children.push(makeTerm(which, idxSym));
+
+      target.children = children;
+      target.ruleMeta = {
+        dominoId: parseInt(alt.dataset.dominoId, 10) || null,
+        ruleType: which,
+        signature: alt.dataset.ruleSignature
+      };
+      renderCurrentTreesAndWords();
+    }
+
+    function openRulePicker(which, targetNode, options) {
+      const backdrop = document.getElementById("rulePickerBackdrop");
+      const list = document.getElementById("rulePickerList");
+      const title = document.getElementById("rulePickerTitle");
+      if (!backdrop || !list || !title) return;
+
+      pendingRulePicker = { which, targetNode, options, selected: 0 };
+
+      title.textContent = (window.t("tree.select_rule_title") || "Choose a rule") + ` (${targetNode.label})`;
+      list.innerHTML = "";
+      options.forEach((opt, idx) => {
+        const div = document.createElement("label");
+        div.className = "rule-option";
+        const inp = document.createElement("input");
+        inp.type = "radio";
+        inp.name = "ruleChoice";
+        inp.value = String(idx);
+        if (idx === 0) inp.checked = true;
+        inp.addEventListener("change", () => { pendingRulePicker.selected = idx; });
+        const txt = document.createElement("span");
+        txt.textContent = opt.label;
+        div.appendChild(inp);
+        div.appendChild(txt);
+        div.addEventListener("click", () => { inp.checked = true; pendingRulePicker.selected = idx; });
+        list.appendChild(div);
+      });
+
+      backdrop.classList.add("open");
+      backdrop.setAttribute("aria-hidden", "false");
+    }
+
+    function closeRulePicker() {
+      const backdrop = document.getElementById("rulePickerBackdrop");
+      if (!backdrop) return;
+      backdrop.classList.remove("open");
+      backdrop.setAttribute("aria-hidden", "true");
+      pendingRulePicker = null;
+    }
+
+    function applyRulePicker() {
+      if (!pendingRulePicker) return;
+      const { which, targetNode, options, selected } = pendingRulePicker;
+      const choice = options[selected];
+      if (!choice) { closeRulePicker(); return; }
+      targetNode.children = choice.children;
+      targetNode.ruleMeta = choice.dominoId ? { dominoId: choice.dominoId, ruleType: which, signature: choice.signature } : null;
+      closeRulePicker();
+      renderCurrentTreesAndWords();
+    }
+
+    function clearTree(which) {
+      if (dominoes.length === 0) {
+        treeData[which] = null;
+      } else {
+        treeData[which] = baseTree(which);
+      }
+      renderCurrentTreesAndWords();
+    }
+
+    function renderCurrentTreesAndWords(leavesOverrideT = null, leavesOverrideB = null, wordOverrideT = null, wordOverrideB = null, matchOverride = null) {
+      const containerT = document.getElementById("treeT");
+      const containerB = document.getElementById("treeB");
+      if (containerT) containerT.innerHTML = "";
+      if (containerB) containerB.innerHTML = "";
+
+      const treeT = treeData.T;
+      const treeB = treeData.B;
+
+      if (treeT) renderTree(containerT, treeT, (node, active) => {
+        const tokEl = document.querySelector(`#derivationsAligned [data-related-node-id="${node.id}"]`);
+        if (tokEl) active ? tokEl.classList.add("highlight") : tokEl.classList.remove("highlight");
+        if (node && node.kind === "nonterm") {
+          if (node.label === "S") {
+            highlightGrammarAlternative(null, "S-rule", active);
+          } else if (node.children && node.children.length > 0 && node.ruleMeta) {
+            highlightGrammarAlternative(node.ruleMeta.dominoId, node.ruleMeta.signature, active);
+            if (node.ruleMeta.dominoId) highlightDominoInPalette(node.ruleMeta.dominoId, active);
+          }
+        }
+      }, "T", handleExpand);
+      if (treeB) renderTree(containerB, treeB, (node, active) => {
+        const tokEl = document.querySelector(`#derivationsAligned [data-related-node-id="${node.id}"]`);
+        if (tokEl) active ? tokEl.classList.add("highlight") : tokEl.classList.remove("highlight");
+        if (node && node.kind === "nonterm") {
+          if (node.label === "S") {
+            highlightGrammarAlternative(null, "S-rule", active);
+          } else if (node.children && node.children.length > 0 && node.ruleMeta) {
+            highlightGrammarAlternative(node.ruleMeta.dominoId, node.ruleMeta.signature, active);
+            if (node.ruleMeta.dominoId) highlightDominoInPalette(node.ruleMeta.dominoId, active);
+          }
+        }
+      }, "B", handleExpand);
+
+      const leavesT = leavesOverrideT ?? (treeT ? collectLeaves(treeT) : []);
+      const leavesB = leavesOverrideB ?? (treeB ? collectLeaves(treeB) : []);
+
+      if ((!leavesT || leavesT.length === 0) && (!leavesB || leavesB.length === 0)) {
+        const da = document.getElementById("derivationsAligned");
+        if (da) { da.innerHTML = ""; da.style.display = "none"; }
+        const matchLine = document.getElementById("matchLine");
+        if (matchLine) matchLine.innerHTML = "";
+        return;
+      }
+
+      renderInteractiveAlignedComparison("derivationsAligned", leavesT, leavesB);
+
+      const wT = wordOverrideT ?? leavesT.map(n => n.label).join(" ");
+      const wB = wordOverrideB ?? leavesB.map(n => n.label).join(" ");
+      const match = (matchOverride != null) ? matchOverride : (wT === wB);
+      const wTa = wT.replace(/ /g, "");
+      const wBa = wB.replace(/ /g, "");
+      const weakMatch = !match && (wTa === wBa);
+
+      const matchLine = document.getElementById("matchLine");
+      if (!matchLine) return;
+      if (match) {
+        matchLine.innerHTML = `<span class="good"><strong>${escapeHtml(window.t("result.match_yes"))}</strong></span> ${escapeHtml(window.t("result.match_explain_yes"))}`;
+      } else if (weakMatch) {
+        matchLine.innerHTML = `<span class="warn"><strong>${escapeHtml(window.t("result.match_weak"))}</strong></span> ${escapeHtml(window.t("result.match_explain_weak"))}`;
+      } else {
+        matchLine.innerHTML = `<span class="danger"><strong>${escapeHtml(window.t("result.match_no"))}</strong></span> ${escapeHtml(window.t("result.match_explain_no"))}`;
+      }
+    }
+
+    function renderInteractiveAlignedComparison(containerId, leavesT, leavesB) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = "";
+      container.style.display = "block";
+
+      const labelT = window.t("result.word_T");
+      const labelB = window.t("result.word_B");
+
+      const len = Math.max(leavesT.length, leavesB.length);
+      const widths = [];
+
+      // Calculate widths
+      for (let i = 0; i < len; i++) {
+        const t = leavesT[i] ? leavesT[i].label : "";
+        const b = leavesB[i] ? leavesB[i].label : "";
+        widths.push(Math.max(t.length, b.length, 1) + 1);
+      }
+
+      function createTokSpan(node, i, otherNode) {
+        const span = document.createElement("span");
+        const tok = node ? node.label : "";
+        const otherTok = otherNode ? otherNode.label : "";
+        const isBlank = !node;
+
+        span.className = "tok " + (isBlank ? "blank" : (tok === otherTok ? "eq" : "neq"));
+        span.style.width = widths[i] + "ch";
+        span.textContent = isBlank ? "·" : tok;
+
+        if (!isBlank && node.id) {
+          span.dataset.relatedNodeId = node.id;
+          // Add interaction
+          const treePrefix = (node.id.indexOf("_T_") !== -1) ? "T" : "B";
+          span.addEventListener("mouseenter", () => {
+            span.classList.add("highlight");
+            const nodeEl = document.querySelector(`#tree${treePrefix} [data-node-id="${node.id}"]`);
+            if (nodeEl) nodeEl.classList.add("highlight");
+          });
+          span.addEventListener("mouseleave", () => {
+            span.classList.remove("highlight");
+            const nodeEl = document.querySelector(`#tree${treePrefix} [data-node-id="${node.id}"]`);
+            if (nodeEl) nodeEl.classList.remove("highlight");
+          });
+        }
+        return span;
+      }
+
+      // Row T
+      const rowT = document.createElement("div");
+      rowT.className = "aligned-row";
+      const lblT = document.createElement("span");
+      lblT.className = "aligned-label";
+      lblT.textContent = labelT;
+      rowT.appendChild(lblT);
+      const toksT = document.createElement("div");
+      toksT.className = "aligned-tokens";
+      for (let i = 0; i < len; i++) {
+        toksT.appendChild(createTokSpan(leavesT[i], i, leavesB[i]));
+      }
+      rowT.appendChild(toksT);
+
+      // Row B
+      const rowB = document.createElement("div");
+      rowB.className = "aligned-row";
+      const lblB = document.createElement("span");
+      lblB.className = "aligned-label";
+      lblB.textContent = labelB;
+      rowB.appendChild(lblB);
+      const toksB = document.createElement("div");
+      toksB.className = "aligned-tokens";
+      for (let i = 0; i < len; i++) {
+        toksB.appendChild(createTokSpan(leavesB[i], i, leavesT[i]));
+      }
+      rowB.appendChild(toksB);
+
+      container.appendChild(rowT);
+      container.appendChild(rowB);
+
+      // Legend
+      const leg = document.createElement("div");
+      leg.className = "aligned-legend";
+      leg.textContent = window.t("result.aligned_legend");
+      container.appendChild(leg);
+    }
+
+    function buildDerivationsFromUI() {
+      if (dominoes.length === 0) {
+        setStatusFromKey("status.need_dominoes", {}, true);
+        return;
+      }
+
+      const seq = parseIndexSequence(document.getElementById("seqInput")?.value);
+      if (seq === null) {
+        setStatusFromKey("status.bad_sequence", {}, true);
+        return;
+      }
+      if (seq.length === 0) {
+        setStatusFromKey("status.empty_sequence", {}, true);
+        return;
+      }
+
+      // Validate indices
+      const k = dominoes.length;
+      for (const idx of seq) {
+        if (idx < 1 || idx > k) {
+          setStatusFromKey("status.sequence_out_of_range", { K: k }, true);
+          return;
+        }
+      }
+
+      const { topTokens, bottomTokens } = concatTopBottom(seq);
+      const topDisp = tokensToDisplay(topTokens);
+      const bottomDisp = tokensToDisplay(bottomTokens);
+
+      // Keep chip summaries (simple text)
+      const _tc = document.getElementById("topConcat"); if (_tc) _tc.textContent = topDisp;
+      const _bc = document.getElementById("bottomConcat"); if (_bc) _bc.textContent = bottomDisp;
+
+      // Build Trees
+      const treeT = buildDerivationTree("T", seq);
+      const treeB = buildDerivationTree("B", seq);
+      treeData = { T: treeT, B: treeB };
+
+      // Collect leaves for valid words
+      const leavesT = collectLeaves(treeT);
+      const leavesB = collectLeaves(treeB);
+
+      const wT = leavesT.map(n => n.label).join(" ");
+      const wB = leavesB.map(n => n.label).join(" ");
+
+      const match = (wT === wB);
+      renderCurrentTreesAndWords(leavesT, leavesB, wT, wB, match);
+      setStatusFromKey(match ? "status.witness_ambiguity" : "status.no_witness", {}, false);
+    }
+
+
+
+    // -----------------------------
+    // Bounded solver (PCP / MPCP) — based on tm2pcp.html
+    // -----------------------------
+    let solverWorker = null;
+    let solverWorkerUrl = null;
+    lastSolverSolution = null; // 1-based indices for THIS tool (workspaceSeq format)
+
+    function terminateSolverWorker() {
+      if (solverWorker) {
+        try { solverWorker.terminate(); } catch (_) { }
+        solverWorker = null;
+      }
+      if (solverWorkerUrl) {
+        try { URL.revokeObjectURL(solverWorkerUrl); } catch (_) { }
+        solverWorkerUrl = null;
+      }
+    }
+
+
+    // Fallback: run the solver on the main thread (used if Worker creation is blocked, e.g., by extensions / file:// restrictions).
+    async function solveInMainThread(dominos, opts, onProgress) {
+      const start = Date.now();
+      const timeLimit = Math.max(0, opts.timeLimitMs | 0);
+      const nodeLimit = Math.max(0, opts.nodeLimit | 0);
+      const maxDepth = Math.max(0, opts.maxDepth | 0);
+      const maxSuffix = Math.max(0, opts.maxSuffixLen | 0);
+      const forceFirst = !!opts.forceFirst;
+
+      let nodes = 0;
+      let bestSuffixLen = Infinity;
+
+      function timeUp() {
+        return timeLimit > 0 && (Date.now() - start) >= timeLimit;
+      }
+      function limitsHit() {
+        return solverCancelRequested || timeUp() || (nodeLimit > 0 && nodes >= nodeLimit);
+      }
+
+      function applyDomino(cfg, top, bottom) {
+        let topSeq, botSeq;
+        if (cfg.side === 0) {
+          topSeq = cfg.suffix.concat(top);
+          botSeq = bottom.slice();
+        } else {
+          topSeq = top.slice();
+          botSeq = cfg.suffix.concat(bottom);
+        }
+
+        // cancel common prefix
+        let i = 0;
+        const m = Math.min(topSeq.length, botSeq.length);
+        while (i < m && topSeq[i] === botSeq[i]) i++;
+        if (i > 0) {
+          topSeq = topSeq.slice(i);
+          botSeq = botSeq.slice(i);
+        }
+
+        if (topSeq.length > 0 && botSeq.length > 0) return null;
+
+        if (topSeq.length === 0 && botSeq.length === 0) return { side: 0, suffix: [] };
+        if (topSeq.length > 0) return { side: 0, suffix: topSeq };
+        return { side: 1, suffix: botSeq };
+      }
+
+      function cfgKey(cfg) {
+        return cfg.side + "|" + cfg.suffix.join("\u0001");
+      }
+
+      async function dfs(cfg, depthLeft, path, visited) {
+        if (limitsHit()) return null;
+
+        if (cfg.suffix.length === 0 && path.length > 0) return path.slice();
+        if (depthLeft === 0) return null;
+        if (maxSuffix > 0 && cfg.suffix.length > maxSuffix) return null;
+
+        if (cfg.suffix.length < bestSuffixLen) bestSuffixLen = cfg.suffix.length;
+
+        const key = cfgKey(cfg) + "@" + depthLeft;
+        if (visited.has(key)) return null;
+        visited.add(key);
+
+        const candidates = [];
+        for (let i = 0; i < dominos.length; i++) {
+          nodes++;
+          if ((nodes % 5000) === 0) {
+            // yield to keep UI responsive
+            await new Promise(r => setTimeout(r, 0));
+            if (limitsHit()) return null;
+          }
+          const d = dominos[i];
+          const next = applyDomino(cfg, d.top || [], d.bottom || []);
+          if (!next) continue;
+          candidates.push([i, next]);
+        }
+        candidates.sort((a, b) => (a[1].suffix.length - b[1].suffix.length));
+
+        for (const [i, next] of candidates) {
+          path.push(i);
+          const sol = await dfs(next, depthLeft - 1, path, visited);
+          if (sol) return sol;
+          path.pop();
+          if (limitsHit()) return null;
+        }
+        return null;
+      }
+
+      let initialCfg = { side: 0, suffix: [] };
+      let initialPath = [];
+      if (forceFirst) {
+        if (!dominos[0]) return { status: "notfound", nodes, ms: (Date.now() - start) };
+        const d0 = dominos[0];
+        const next0 = applyDomino(initialCfg, d0.top || [], d0.bottom || []);
+        if (!next0) return { status: "notfound", nodes, ms: (Date.now() - start) };
+        initialCfg = next0;
+        initialPath = [0];
+      }
+
+      for (let depthLimit = initialPath.length; depthLimit <= maxDepth; depthLimit++) {
+        if (limitsHit()) break;
+        if (typeof onProgress === "function") onProgress({ nodes, depthLimit, bestSuffixLen });
+
+        const visited = new Set();
+        const path = initialPath.slice();
+        const sol = await dfs(initialCfg, depthLimit - initialPath.length, path, visited);
+        if (sol) return { status: "found", solution: sol, nodes, ms: (Date.now() - start) };
+      }
+
+      if (solverCancelRequested) return { status: "cancelled", nodes, ms: (Date.now() - start) };
+      if (timeUp()) return { status: "timeout", nodes, ms: (Date.now() - start) };
+      if (nodeLimit > 0 && nodes >= nodeLimit) return { status: "nodelimit", nodes, ms: (Date.now() - start) };
+      return { status: "notfound", nodes, ms: (Date.now() - start) };
+    }
+
+    function ensureSolverWorker() {
+      if (solverWorker) return solverWorker;
+
+      // IMPORTANT: this solver works on token arrays (not raw strings).
+      // This matches tm2pcp and is crucial for instances where symbols are separated by spaces.
+      const workerCode = `
+        let cancelled = false;
+
+        function nowMs() { return Date.now(); }
+
+        // cfg: { side: 0|1, suffix: Array<string> }
+        // side=0 => TOP has extra suffix (top = bottom + suffix)
+        // side=1 => BOTTOM has extra suffix (bottom = top + suffix)
+        function applyDomino(cfg, top, bottom) {
+          let topSeq, botSeq;
+
+          if (cfg.side === 0) {
+            topSeq = cfg.suffix.concat(top);
+            botSeq = bottom.slice();
+          } else {
+            topSeq = top.slice();
+            botSeq = cfg.suffix.concat(bottom);
+          }
+
+          // Cancel common prefix (token-wise)
+          let i = 0;
+          const m = Math.min(topSeq.length, botSeq.length);
+          while (i < m && topSeq[i] === botSeq[i]) i++;
+          if (i > 0) {
+            topSeq = topSeq.slice(i);
+            botSeq = botSeq.slice(i);
+          }
+
+          // If both non-empty, they differ on first token => dead end
+          if (topSeq.length > 0 && botSeq.length > 0) return null;
+
+          if (topSeq.length === 0 && botSeq.length === 0) {
+            return { side: 0, suffix: [] };
+          } else if (topSeq.length > 0) {
+            return { side: 0, suffix: topSeq };
+          } else {
+            return { side: 1, suffix: botSeq };
+          }
+        }
+
+        function cfgKey(cfg) {
+          // Use a separator unlikely to appear in tokens
+          return cfg.side + "|" + cfg.suffix.join("\\u0001");
+        }
+
+        function postProgress(nodes, depthLimit, bestSuffixLen) {
+          postMessage({ type: "progress", nodes, depthLimit, bestSuffixLen });
+        }
+
+        async function solve(dominos, opts) {
+          cancelled = false;
+          const start = nowMs();
+          const timeLimit = Math.max(0, opts.timeLimitMs | 0);
+          const nodeLimit = Math.max(0, opts.nodeLimit | 0);
+          const maxDepth  = Math.max(0, opts.maxDepth | 0);
+          const maxSuffix = Math.max(0, opts.maxSuffixLen | 0);
+
+          let nodes = 0;
+          let bestSuffixLen = Infinity;
+
+          function timeUp() {
+            return timeLimit > 0 && (nowMs() - start) >= timeLimit;
+          }
+
+          function limitsHit() {
+            return cancelled || timeUp() || (nodeLimit > 0 && nodes >= nodeLimit);
+          }
+
+          function dfs(cfg, depthLeft, path, visited) {
+            if (limitsHit()) return null;
+
+            // success: exact match (empty suffix) and non-empty path
+            if (cfg.suffix.length === 0 && path.length > 0) {
+              return path.slice();
+            }
+            if (depthLeft === 0) return null;
+
+            if (maxSuffix > 0 && cfg.suffix.length > maxSuffix) return null;
+
+            if (cfg.suffix.length < bestSuffixLen) bestSuffixLen = cfg.suffix.length;
+
+            const key = cfgKey(cfg) + "@" + depthLeft;
+            if (visited.has(key)) return null;
+            visited.add(key);
+
+            // Try dominos that reduce suffix first (simple, very effective heuristic)
+            const candidates = [];
+            for (let i = 0; i < dominos.length; i++) {
+              nodes++;
+              if (limitsHit()) return null;
+
+              const d = dominos[i];
+              const next = applyDomino(cfg, d.top || [], d.bottom || []);
+              if (!next) continue;
+              candidates.push([i, next]);
+            }
+            candidates.sort((a, b) => (a[1].suffix.length - b[1].suffix.length));
+
+            for (const [i, next] of candidates) {
+              path.push(i);
+              const sol = dfs(next, depthLeft - 1, path, visited);
+              if (sol) return sol;
+              path.pop();
+              if (limitsHit()) return null;
+            }
+            return null;
+          }
+
+          // Prepare initial cfg/path
+          let initialCfg = { side: 0, suffix: [] };
+          let initialPath = [];
+
+          if (opts.forceFirst === true) {
+            if (!dominos[0]) return { status: "notfound", nodes, ms: (nowMs() - start) };
+            const d0 = dominos[0];
+            const next0 = applyDomino(initialCfg, d0.top || [], d0.bottom || []);
+            if (!next0) return { status: "notfound", nodes, ms: (nowMs() - start) };
+            initialCfg = next0;
+            initialPath = [0];
+          }
+
+          // Iterative deepening
+          for (let depthLimit = initialPath.length; depthLimit <= maxDepth; depthLimit++) {
+            if (limitsHit()) break;
+            postProgress(nodes, depthLimit, bestSuffixLen);
+
+            const visited = new Set();
+            const path = initialPath.slice();
+            const sol = dfs(initialCfg, depthLimit - initialPath.length, path, visited);
+            if (sol) {
+              return { status: "found", solution: sol, nodes, ms: (nowMs() - start) };
+            }
+          }
+
+          if (cancelled) return { status: "cancelled", nodes, ms: (nowMs() - start) };
+          if (timeUp()) return { status: "timeout", nodes, ms: (nowMs() - start) };
+          if (nodeLimit > 0 && nodes >= nodeLimit) return { status: "nodelimit", nodes, ms: (nowMs() - start) };
+          return { status: "notfound", nodes, ms: (nowMs() - start) };
+        }
+
+        onmessage = async (e) => {
+          const msg = e.data || {};
+          if (msg.type === "cancel") {
+            cancelled = true;
+            return;
+          }
+          if (msg.type !== "start") return;
+
+          try {
+            const res = await solve(msg.dominos || [], msg.opts || {});
+            postMessage({ type: "done", result: res });
+          } catch (err) {
+            postMessage({ type: "error", error: (err && err.message) ? err.message : String(err) });
+          }
+        };
+      `;
+
+      const blob = new Blob([workerCode], { type: "application/javascript" });
+      solverWorkerUrl = URL.createObjectURL(blob);
+      solverWorker = new Worker(solverWorkerUrl);
+      return solverWorker;
+    }
+
+    function setSolverProgressText(txt) {
+      const el = document.getElementById("solverProgress");
+      if (el) el.textContent = txt || "";
+    }
+    function setSolverResultText(txt) {
+      const el = document.getElementById("solverResult");
+      if (el) el.textContent = txt || "";
+    }
+    function setSolverUIRunning(running) {
+      solverRunning = running;
+      const solveBtn = document.getElementById("solveBtn");
+      const cancelBtn = document.getElementById("cancelSolveBtn");
+      const loadBtn = document.getElementById("loadSolutionBtn");
+      if (solveBtn) solveBtn.disabled = running;
+      if (cancelBtn) cancelBtn.disabled = !running;
+      if (loadBtn) loadBtn.disabled = running || !lastSolverSolution;
+    }
+
+    function parsePositiveInt(id, fallback) {
+      const el = document.getElementById(id);
+      const n = parseInt(String(el ? el.value : "").trim(), 10);
+      return Number.isFinite(n) && n >= 0 ? n : fallback;
+    }
+
+    function tokenizeForSolver(raw) {
+      const s = String(raw ?? "").trim();
+      if (!s) return [];
+      // tm2pcp semantics: tokens separated by whitespace
+      return s.split(/\s+/).filter(Boolean);
+    }
+
+    function startSolver() {
+      if (!dominoes || dominoes.length === 0) {
+        setStatusFromKey("status.need_dominoes", {}, true);
+        return;
+      }
+
+      solverCancelRequested = false;
+      lastSolverSolution = null;
+      setSolverProgressText("");
+      setSolverResultText("");
+      setSolverUIRunning(true);
+
+      const maxDepth = parsePositiveInt("solverDepth", 20);
+      const timeLimit = parsePositiveInt("solverTime", 1500);
+      const nodeLimit = parsePositiveInt("solverNodes", 200000);
+
+      // In THIS tool: checked => use MPCP behavior (force first tile = 1)
+      const forceFirst = !!document.getElementById("toggleMPCP")?.checked;
+
+      const dominosPayload = dominoes.map(d => ({
+        top: tokenizeForSolver(d.top),
+        bottom: tokenizeForSolver(d.bottom),
+      }));
+
+      let worker = null;
+      try {
+        worker = ensureSolverWorker();
+      } catch (err) {
+        // Worker blocked: fall back to main-thread solver
+        (async () => {
+          try {
+            const res = await solveInMainThread(dominosPayload, {
+              maxDepth: maxDepth,
+              timeLimitMs: timeLimit,
+              nodeLimit: nodeLimit,
+              forceFirst: forceFirst,
+              maxSuffixLen: 0
+            }, (p) => {
+              const best = (p.bestSuffixLen != null && p.bestSuffixLen !== Infinity) ? p.bestSuffixLen : "–";
+              setSolverProgressText(window.t("solver.progress_depth", { D: p.depthLimit, N: p.nodes }) + `  |  best suffix: ${best}`);
+            });
+
+            setSolverUIRunning(false);
+            setSolverProgressText("");
+
+            if (res.status === "found" && Array.isArray(res.solution)) {
+              const sol1 = res.solution.map(x => (x | 0) + 1);
+              lastSolverSolution = sol1;
+              setSolverResultText(window.t("solver.solution_found_verbose", { LEN: sol1.length, MS: res.ms, NODES: res.nodes, SEQ: sol1.join(", ") }));
+              const loadBtn = document.getElementById("loadSolutionBtn");
+              if (loadBtn) loadBtn.disabled = false;
+              setStatusFromKey("status.solver_found", {}, false);
+            } else {
+              lastSolverSolution = null;
+              const loadBtn = document.getElementById("loadSolutionBtn");
+              if (loadBtn) loadBtn.disabled = true;
+
+              if (res.status === "timeout") setSolverResultText(window.t("solver.time_limit_hit"));
+              else if (res.status === "nodelimit") setSolverResultText(window.t("solver.node_limit_hit"));
+              else if (res.status === "cancelled") setSolverResultText(window.t("solver.cancelled"));
+              else setSolverResultText(window.t("solver.no_solution_found"));
+
+              setStatusFromKey("status.solver_none", {}, false);
+            }
+          } catch (e2) {
+            setSolverUIRunning(false);
+            setSolverProgressText("");
+            setSolverResultText(String(e2 && e2.message ? e2.message : e2));
+            setStatusFromKey("status.solver_limits", {}, true);
+          }
+        })();
+        return;
+      }
+
+      worker.onmessage = (ev) => {
+        const msg = ev.data || {};
+        if (msg.type === "progress") {
+          // Show progress like tm2pcp (best suffix length is helpful feedback)
+          const nodes = msg.nodes || 0;
+          const depthLimit = msg.depthLimit || 0;
+          const best = (msg.bestSuffixLen != null && msg.bestSuffixLen !== Infinity) ? msg.bestSuffixLen : "–";
+          setSolverProgressText(window.t("solver.progress_depth", { D: depthLimit, N: nodes }) + `  |  best suffix: ${best}`);
+          return;
+        }
+        if (msg.type === "error") {
+          setSolverUIRunning(false);
+          setSolverProgressText("");
+          setStatusFromKey("status.solver_limits", {}, true);
+          setSolverResultText(String(msg.error || "Unknown error"));
+          terminateSolverWorker();
+          return;
+        }
+        if (msg.type === "done") {
+          setSolverUIRunning(false);
+          setSolverProgressText("");
+
+          const res = msg.result || {};
+          if (res.status === "found" && Array.isArray(res.solution)) {
+            // Worker solution is 0-based indices; convert to 1-based for this tool.
+            const sol1 = res.solution.map(x => (x | 0) + 1);
+            lastSolverSolution = sol1;
+            setSolverResultText(window.t("solver.solution_found_verbose", { LEN: sol1.length, MS: res.ms, NODES: res.nodes, SEQ: sol1.join(", ") }));
+
+            const loadBtn = document.getElementById("loadSolutionBtn");
+            if (loadBtn) loadBtn.disabled = false;
+
+            setStatusFromKey("status.solver_found", {}, false);
+          } else {
+            lastSolverSolution = null;
+            const loadBtn = document.getElementById("loadSolutionBtn");
+            if (loadBtn) loadBtn.disabled = true;
+
+            // Keep your existing text keys where possible
+            if (res.status === "timeout") setSolverResultText(window.t("solver.time_limit_hit"));
+            else if (res.status === "nodelimit") setSolverResultText(window.t("solver.node_limit_hit"));
+            else if (res.status === "cancelled") setSolverResultText(window.t("solver.cancelled"));
+            else setSolverResultText(window.t("solver.no_solution_found"));
+
+            setStatusFromKey("status.solver_none", {}, false);
+          }
+        }
+      };
+
+      worker.postMessage({
+        type: "start",
+        dominos: dominosPayload,
+        opts: {
+          maxDepth: maxDepth,
+          timeLimitMs: timeLimit,
+          nodeLimit: nodeLimit,
+          forceFirst: forceFirst,
+          maxSuffixLen: 0
+        }
+      });
+    }
+
+    function cancelSolver() {
+      solverCancelRequested = true;
+      // Hard stop the worker to ensure immediate cancellation
+      terminateSolverWorker();
+
+      // Update UI manually since the worker is dead and won't send a "cancelled" message
+      setSolverUIRunning(false);
+      setSolverProgressText(""); // Clear progress
+      setSolverResultText(window.t("solver.cancelled"));
+      setStatusFromKey("status.solver_none", {}, false);
+
+      const loadBtn = document.getElementById("loadSolutionBtn");
+      if (loadBtn) loadBtn.disabled = true;
+    }
+
+    function runBoundedSolver() {
+      // Compatibility wrapper (tm2pcp naming)
+      startSolver();
+    }
+
+    function updateSolverTitle() {
+      // In THIS tool: checked => MPCP mode (force start with domino 1)
+      const isMPCP = !!document.getElementById("toggleMPCP")?.checked;
+      const el = document.getElementById("solverTitleText");
+      if (el) {
+        el.textContent = isMPCP ? window.t("solver.title_mpcp") : window.t("solver.title_pcp");
+      }
+    }
+
+    function loadSolverSolutionIntoWorkspace() {
+      if (!lastSolverSolution || !Array.isArray(lastSolverSolution) || lastSolverSolution.length === 0) return;
+      // Destination cleared before receiving the sequence
+      workspaceSeq = [];
+      for (const idx of lastSolverSolution) {
+        const n = parseInt(idx, 10);
+        if (Number.isFinite(n) && n >= 1 && n <= dominoes.length) {
+          workspaceSeq.push(n);
+        }
+      }
+      renderWorkspace();
+      concatWorkspaceStrings();
+    }
+
+
+
+    // -----------------------------
+    // Events
+    // -----------------------------
+    function onDominoesChanged(rebuildOutputs = true) {
+      initWorkspaceDnD();
+      renderDominoPalette();
+      refreshGrammarBox();
+      initBaseTrees();
+
+      if (rebuildOutputs) {
+        // Clear all derived state (workspace, solver, derivation explorer)
+        // since domino identities may have changed
+        resetDerivedState();
+      } else {
+        // Just update workspace display without clearing
+        renderWorkspace();
+        concatWorkspaceStrings();
+      }
+
+      // Update status gently
+      if (dominoes.length === 0) setStatusFromKey("status.ready_empty", {}, false);
+      else setStatusFromKey("status.ready_k", { K: dominoes.length }, false);
+    }
+
+    document.getElementById("addDominoBtn").addEventListener("click", () => {
+      dominoes.push({ id: dominoes.length + 1, top: "", bottom: "" });
+      onDominoesChanged();
+    });
+
+    document.getElementById("clearDominoesBtn").addEventListener("click", () => {
+      dominoes = [];
+      onDominoesChanged();
+    });
+
+    document.getElementById("exportCsvBtn").addEventListener("click", () => {
+      if (!dominoes.length) {
+        setStatusFromKey("status.export_none", {}, true);
+        return;
+      }
+      let csv = "domino_id,top_string,bottom_string\n";
+      for (const d of dominoes) {
+        csv += `${d.id},${csvEscape(d.top)},${csvEscape(d.bottom)}\n`;
+      }
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "pcp_dominoes.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatusFromKey("status.export_ok", { K: dominoes.length }, false);
+    });
+
+    document.getElementById("csvFile").addEventListener("change", (ev) => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = parseCsv(String(e.target.result || ""));
+          dominoes = parsed;
+          onDominoesChanged();
+          setStatusFromKey("status.import_ok", { K: dominoes.length }, false);
+        } catch (err) {
+          setStatusFromKey("status.import_fail", { ERR: err.message || String(err) }, true);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById("buildDerivBtn").addEventListener("click", buildDerivationsFromUI);
+    document.getElementById("clearDerivBtn").addEventListener("click", () => {
+      clearDerivationsUI();
+    });
+
+    // Workspace sync buttons
+    document.getElementById("toWorkspaceBtn").addEventListener("click", () => {
+      // sequence input -> workspace (clear workspace first)
+      sendSeqInputToWorkspace();
+    });
+    document.getElementById("fromWorkspaceBtn").addEventListener("click", () => {
+      // workspace -> sequence input (clear seq input first)
+      sendWorkspaceToSeqInput();
+    });
+
+    // Workspace controls
+    document.getElementById("clearWorkspaceBtn").addEventListener("click", () => {
+      clearWorkspace();
+      setStatusFromKey("status.workspace_cleared", {}, false);
+    });
+    document.getElementById("wrapToggle").addEventListener("change", (ev) => {
+      setWorkspaceWrapMode(!!ev.target.checked);
+    });
+    document.getElementById("wrapToggleDeriv").addEventListener("change", (ev) => {
+      setDerivationWrapMode(!!ev.target.checked);
+    });
+
+    document.getElementById("toggleMPCP").addEventListener("change", () => {
+      updateSolverTitle();
+    });
+
+    // Solver controls
+    document.getElementById("solveBtn").addEventListener("click", () => {
+      runBoundedSolver();
+    });
+    document.getElementById("cancelSolveBtn").addEventListener("click", () => {
+      cancelSolver();
+    });
+    document.getElementById("loadSolutionBtn").addEventListener("click", () => {
+      loadSolverSolutionIntoWorkspace();
+    });
+
+    // Tree zoom controls
+    const clampZoom = (z) => Math.min(2, Math.max(0.5, z));
+    function adjustZoom(which, delta) {
+      treeZoom[which] = clampZoom((treeZoom[which] || 1) + delta);
+      applyTreeZoom(which);
+    }
+    document.getElementById("zoomInT").addEventListener("click", () => adjustZoom("T", 0.1));
+    document.getElementById("zoomOutT").addEventListener("click", () => adjustZoom("T", -0.1));
+    document.getElementById("zoomInB").addEventListener("click", () => adjustZoom("B", 0.1));
+    document.getElementById("zoomOutB").addEventListener("click", () => adjustZoom("B", -0.1));
+    document.getElementById("clearTreeT").addEventListener("click", () => clearTree("T"));
+    document.getElementById("clearTreeB").addEventListener("click", () => clearTree("B"));
+
+    // Rule picker events
+    document.getElementById("rulePickerClose").addEventListener("click", closeRulePicker);
+    document.getElementById("rulePickerCancel").addEventListener("click", closeRulePicker);
+    document.getElementById("rulePickerApply").addEventListener("click", applyRulePicker);
+    document.getElementById("rulePickerBackdrop").addEventListener("click", (e) => {
+      if (e.target && e.target.id === "rulePickerBackdrop") closeRulePicker();
+    });
+
+    document.getElementById("exampleBtn").addEventListener("click", () => {
+      // A small example to demonstrate token-based comparisons.
+      dominoes = [
+        { id: 1, top: "0", bottom: "1 0 0" },
+        { id: 2, top: "0 1", bottom: "0 0" },
+        { id: 3, top: "1 1 0", bottom: "1 1" }
+      ];
+      onDominoesChanged();
+      setStatusFromKey("status.example_loaded", {}, false);
+    });
+
+    // Splitter (same feel as tm2pcp)
+    function setupSplitter() {
+      const container = document.querySelector(".split-container");
+      const leftPane = document.getElementById("leftPane");
+      const rightPane = document.getElementById("rightPane");
+      const divider = document.getElementById("divider");
+      if (!container || !leftPane || !rightPane || !divider) return;
+
+      let isDragging = false;
+      divider.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        isDragging = true;
+        document.body.style.userSelect = "none";
+      });
+      window.addEventListener("mouseup", () => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.userSelect = "";
+        }
+      });
+      window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const rect = container.getBoundingClientRect();
+        let offsetX = e.clientX - rect.left;
+
+        const min = 260;
+        const max = rect.width - 260;
+        if (offsetX < min) offsetX = min;
+        if (offsetX > max) offsetX = max;
+
+        const leftPercent = (offsetX / rect.width) * 100;
+        const rightPercent = 100 - leftPercent;
+
+        leftPane.style.flex = `0 0 ${leftPercent}%`;
+        rightPane.style.flex = `0 0 ${rightPercent}%`;
+      });
+    }
+
+    // Language toggle
+    const langBtn = document.getElementById("langSwitch");
+    if (langBtn) {
+      langBtn.addEventListener("click", () => {
+        const cur = getCurrentLang();
+        const next = (cur === "pt-BR") ? "en" : "pt-BR";
+        window.setLanguage(next);
+        setCurrentLang(next);
+        refreshLangSwitchUI();
+
+        // re-render UI-dependent text
+        window.applyI18n();
+        renderDominoPalette();
+        refreshGrammarBox();
+        // Refresh workspace/derivation localized labels without forcing state changes
+        concatWorkspaceStrings();
+        const seqVal = (document.getElementById("seqInput")?.value || "").trim();
+        if (seqVal && dominoes.length > 0) {
+          buildDerivationsFromUI();
+        }
+        if (isHelpOpen()) renderHelpModal();
+      });
+    }
+
+    // Dark mode toggle
+    const darkBtn = document.getElementById("darkModeSwitch");
+    if (darkBtn) {
+      darkBtn.addEventListener("click", () => {
+        const isDark = !document.body.classList.contains("dark-mode");
+        toggleDarkMode(isDark);
+      });
+    }
+
+    // Init
+    applyDarkModeFromStorage();
+    window.initLanguageFromStorage("pcp2cfg-lang"); // uses storage key you pass
+    refreshLangSwitchUI();
+    refreshDarkModeSwitchUI();
+    setupSplitter();
+
+    initWorkspaceDnD();
+    // Init workspace + solver UI
+    setWorkspaceWrapMode(!!document.getElementById("wrapToggle")?.checked);
+    setDerivationWrapMode(!!document.getElementById("wrapToggleDeriv")?.checked);
+    updateSolverTitle();
+
+    onDominoesChanged();
+  </script>
+
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <div>
+        © <span id="footer-year"></span>
+        <a href="https://brunogrisci.github.io/" target="_blank" rel="noreferrer">Prof. Bruno Iochins Grisci</a>
+        — Departamento de Informática Teórica,
+        <a href="https://www.inf.ufrgs.br/site/" target="_blank" rel="noreferrer">Instituto de Informática</a>,
+        <a href="https://www.ufrgs.br/site/" target="_blank" rel="noreferrer">UFRGS</a>.
+      </div>
+      <div>
+        <span data-i18n="footer.code_label">Code on GitHub:</span>
+        <a href="https://github.com/BrunoGrisci/pcp2cfg-webtool" target="_blank" rel="noreferrer">
+          brunogrisci/pcp2cfg-webtool
+        </a>
+        —
+        <span data-i18n="footer.licensed_label">Licensed under</span>
+        <a href="https://github.com/BrunoGrisci/pcp2cfg-webtool/blob/main/LICENSE" target="_blank" rel="noreferrer">
+          MIT License
+        </a>.
+        <span style="margin-left:0.35rem; font-size:0.85rem; opacity:0.85;">
+          <a href="https://www.flaticon.com/br/icones-gratis/pontos" target="_blank" rel="noreferrer" title="pontos ícones">
+            Pontos ícones criados por rizal2109 - Flaticon
+          </a>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Footer year with failsafe
+    (function () {
+      const el = document.getElementById("footer-year");
+      if (!el) return;
+      let year = 2025;
+      try {
+        const d = new Date();
+        const y = d.getFullYear();
+        if (typeof y === "number" && !isNaN(y) && y > 1900 && y < 3000) {
+          year = y;
+        }
+      } catch (e) { }
+      el.textContent = String(year);
+    })();
+  </script>
+</body>
+
+</html>
