@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GraViKA — Graph Virtual Knockout Analysis Software</title>
+  <link rel="stylesheet" href="gravika/styles.css" />
+</head>
+<body>
+  <div id="appRoot">
+    <header class="headerBar">
+      <button id="toggleConfigBtn" class="btn">▼ Configuration</button>
+      <div id="appBrand" class="appBrand">GraViKA — Graph Virtual Knockout Analysis Software</div>
+      <div id="statusBar" class="statusBar">Idle</div>
+    </header>
+
+    <section id="configPanel" class="configPanel">
+      <div class="configRow sourceRow">
+        <div class="fieldGroup inlineGroup">
+          <label for="graphSource">Graph source:</label>
+          <select id="graphSource">
+            <option value="file">file</option>
+            <option value="random">random</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="fileSelectionRow" class="configRow">
+        <div class="fieldGroup fullWidth">
+          <label for="filePath">Graph file (TSV, CYS, or GEXF)</label>
+          <div class="filePickerRow">
+            <input id="filePath" type="text" readonly placeholder="No file selected" />
+            <button id="browseBtn" class="btn">Browse</button>
+          </div>
+          <input id="fileInput" type="file" accept=".tsv,.cys,.gexf" hidden />
+        </div>
+      </div>
+
+      <div id="randomGraphRow" class="configRow hidden">
+        <div class="fieldGroup inlineGroup">
+          <label for="randomGraphType">Graph type:</label>
+          <select id="randomGraphType">
+            <option value="erdos_renyi">erdos_renyi</option>
+            <option value="barabasi_albert">barabasi_albert</option>
+            <option value="watts_strogatz">watts_strogatz</option>
+          </select>
+        </div>
+        <div class="fieldGroup inlineGroup">
+          <label for="randomGraphSize">Size (nodes):</label>
+          <input id="randomGraphSize" type="number" min="1" value="50" />
+        </div>
+        <button id="generateRandomBtn" class="btn">Generate</button>
+      </div>
+
+      <div id="networkRow" class="configRow hidden">
+        <div class="fieldGroup fullWidth">
+          <label for="networkSelect">Network</label>
+          <select id="networkSelect"></select>
+        </div>
+      </div>
+
+      <div id="tsvOptionsRow" class="configRow hidden">
+        <div class="fieldGroup">
+          <label for="edge1Select">Source Node Column</label>
+          <select id="edge1Select"></select>
+        </div>
+        <div class="fieldGroup">
+          <label for="edge2Select">Destination Node Column</label>
+          <select id="edge2Select"></select>
+        </div>
+        <div class="fieldGroup">
+          <label for="weightSelect">Weight Column</label>
+          <select id="weightSelect"></select>
+        </div>
+        <label class="checkboxLabel"><input id="removeSelfEdges" type="checkbox" checked /> Remove self-edges</label>
+        <label class="checkboxLabel"><input id="directedGraph" type="checkbox" /> Directed graph</label>
+      </div>
+
+      <div class="configRow">
+        <div class="fieldGroup fullWidth">
+          <span class="groupTitle">Graph processing</span>
+          <div class="inlineChecks">
+            <label class="checkboxLabel"><input id="removeZeroDegree" type="checkbox" /> Remove zero degree nodes</label>
+            <label class="checkboxLabel"><input id="useLargestComponent" type="checkbox" /> Use only the largest component</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="configRow">
+        <div class="fieldGroup nodeSelectorGroup">
+          <span class="groupTitle">Nodes to remove</span>
+          <div class="nodeSelector">
+            <div class="searchRow">
+              <label for="nodeSearch">Search:</label>
+              <input id="nodeSearch" type="text" />
+            </div>
+            <select id="nodeList" multiple size="8"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="configRow">
+        <div class="fieldGroup fullWidth">
+          <span class="groupTitle">Centrality measures</span>
+          <div id="centralityOptions" class="centralityGrid"></div>
+        </div>
+      </div>
+
+      <div class="configRow">
+        <div class="fieldGroup fullWidth">
+          <span class="groupTitle">Plot options</span>
+          <div class="plotOptions">
+            <div class="inlineGroup">
+              <label for="layoutType">Layout:</label>
+              <select id="layoutType">
+                <option value="Spring">Spring</option>
+                <option value="Circular">Circular</option>
+                <option value="Random">Random</option>
+                <option value="Radial">Radial</option>
+                <option value="Shell">Shell</option>
+                <option value="Grid">Grid</option>
+              </select>
+            </div>
+            <label class="checkboxLabel"><input id="showNodeNames" type="checkbox" checked /> Show node names</label>
+            <label class="checkboxLabel"><input id="edgeThicknessByWeight" type="checkbox" checked /> Edge thickness by weight</label>
+            <label class="checkboxLabel"><input id="markRemovedEdges" type="checkbox" checked /> Mark removed edges</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="configRow actionsRow">
+        <button id="runBtn" class="btn">Run Analysis</button>
+        <button id="refreshPlotBtn" class="btn">Refresh Plot</button>
+        <button id="saveSvgBtn" class="btn">Save SVG As...</button>
+        <button id="exportCysBtn" class="btn hidden">Export CYS...</button>
+        <button id="clearBtn" class="btn">Clear</button>
+      </div>
+    </section>
+
+    <main class="mainLayout">
+      <section id="leftPanel" class="leftPanel">
+        <div id="graphInfoBox" class="graphInfoBox">
+          <div class="graphInfoTitle">General Graph Info</div>
+          <table class="graphInfoTable">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Original Graph</th>
+                <th>After Node Exclusion</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Number of nodes</td>
+                <td id="graphInfoNodesBefore">-</td>
+                <td id="graphInfoNodesAfter">-</td>
+              </tr>
+              <tr>
+                <td>Number of edges</td>
+                <td id="graphInfoEdgesBefore">-</td>
+                <td id="graphInfoEdgesAfter">-</td>
+              </tr>
+              <tr>
+                <td>Number of self-loops</td>
+                <td id="graphInfoSelfLoopsBefore">-</td>
+                <td id="graphInfoSelfLoopsAfter">-</td>
+              </tr>
+              <tr>
+                <td>Number of connected components</td>
+                <td id="graphInfoComponentsBefore">-</td>
+                <td id="graphInfoComponentsAfter">-</td>
+              </tr>
+              <tr>
+                <td>Diameter</td>
+                <td id="graphInfoDiameterBefore">-</td>
+                <td id="graphInfoDiameterAfter">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="adjacencyView" class="panelView hidden">
+          <div class="panelTitle">Graph Adjacency List</div>
+          <div class="tableWrapper">
+            <table id="adjacencyTable" class="dataTable">
+              <thead>
+                <tr>
+                  <th data-col="node" data-table="adjacency">Node</th>
+                  <th data-col="adjacent_nodes" data-table="adjacency">Adjacent Nodes</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div id="adjacencyCounts" class="subtleText hidden">Nodes: 0, Edges: 0</div>
+        </div>
+
+        <div id="analysisView" class="panelView hidden">
+          <div class="panelHeader">
+            <div id="diameterInfo" class="subtleText hidden"></div>
+            <button id="exportCsvBtn" class="btn">Export as CSV</button>
+          </div>
+          <div class="tableWrapper">
+            <table id="analysisTable" class="dataTable">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <div
+        id="mainSplitter"
+        class="mainSplitter"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize table and plot panels"
+      ></div>
+
+      <section id="rightPanel" class="rightPanel">
+        <div class="plotTabs">
+          <button id="plotTabStatic" class="plotTab active" data-plot-mode="static">Static</button>
+          <button id="plotTabInteractive" class="plotTab" data-plot-mode="interactive">Interactive</button>
+        </div>
+        <div id="plotContainer" class="plotContainer">
+          <div id="plotTitle" class="plotTitle"></div>
+          <svg id="graphSvgStatic" class="plotSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <svg id="graphSvgInteractive" class="plotSvg hidden" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div id="plotTooltip" class="plotTooltip hidden"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="appFooter">
+      <div>© 2026 Leonardo Rezende Alles, <a href="http://lattes.cnpq.br/7172664940074610" target="_blank" rel="noopener noreferrer">Prof. Bruno Cesar Feltes</a>, <a href="https://brunogrisci.github.io/" target="_blank" rel="noopener noreferrer">Prof. Bruno Iochins Grisci</a>  — <a href="https://www.ufrgs.br/site/" target="_blank" rel="noopener noreferrer">Universidade Federal do Rio Grande do Sul</a> (UFRGS)</div>
+      <div>
+        Code on GitHub:
+        <a href="https://github.com/lralles/graph-centrality-analysis" target="_blank" rel="noopener noreferrer">https://github.com/lralles/graph-centrality-analysis</a>
+        — Licensed under <a href="LICENSE" target="_blank" rel="noopener noreferrer">LICENSE</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="gravika/app.js"></script>
+</body>
+</html>
