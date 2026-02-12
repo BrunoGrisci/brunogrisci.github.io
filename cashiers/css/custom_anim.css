@@ -1,0 +1,38 @@
+/* Explicit Container Exits */
+.container-exit-happy {
+    animation: happyExit 2.3s ease-in forwards !important;
+}
+
+.container-exit-angry {
+    animation: angryExit 2.3s ease-in forwards !important;
+}
+
+@keyframes happyExit {
+    0% {
+        transform: translateX(0) scale(1);
+    }
+
+    20% {
+        transform: translateX(20px) scale(1.1) translateY(-10px);
+    }
+
+    100% {
+        transform: translateX(-120vw) scale(1) rotate(-5deg);
+        opacity: 0;
+    }
+}
+
+@keyframes angryExit {
+    0% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(10px) skewX(-10deg);
+    }
+
+    100% {
+        transform: translateX(-120vw) skewX(20deg);
+        opacity: 0;
+    }
+}

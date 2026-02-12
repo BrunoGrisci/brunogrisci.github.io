@@ -1,0 +1,70 @@
+CONTEXT
+
+I need to develop a simple web game to teach students the main ideas about Cashier′s algorithm. Based on the material available in the project folder.
+
+The game can only use .html, css and javascript. The project will be hosted in a githubpage and should run in browsers.
+
+CASHIERS-ALGORITHM
+
+CASHIERS-ALGORITHM (x, c1, c2, …, cn)
+SORT n coin denominations so that 0 < c1 < c2 < … < cn.
+S ← ∅. (multiset of coins selected)
+WHILE (x > 0)
+    k ← largest coin denomination ck such that ck ≤ x.
+    IF (no such k)
+        RETURN “no solution.”
+    ELSE
+        x ← x – c k.
+        S ← S ∪ { k }.
+RETURN S.
+
+GAME MECHANIC
+
+Given U. S. currency denominations { 1, 5, 10, 25, 100 },
+devise a method to pay amount to customer using fewest coins.
+
+Cashier′s algorithm. At each iteration, add coin of the largest value that does not take us past the amount to be paid.
+
+The loop of this game is the following:
+
+- The player is the cashier and has access to the cash register. The cash register has a slot with each type of coin.
+- There is a queue of customers in front of the cash register. In each turn, each customer pays for their items generating a given amount of change that must be given back using the coins in the register machine.
+- The goal of the player is to select the minimum amount of coins that correctly sums to the change due to the curent customer.
+- If the player gives the correct change with the smallest number of coins, it receives a message saying nice job!
+- If the player gives the correct change with more coins than needed, it gets a bad message.
+- If the player gives the wrong change, they lose the game.
+
+OTHER SCENES
+
+The game must have three different "scenes":
+1) The scene described above, with the cashier and U. S. currency denominations { 1, 5, 10, 25, 100 }.
+2) Same as above, but with the Brazilian currency denominations {5, 10, 25, 50, 100}.
+3) A post office selling stamps, just as the case described in one of the slides. The U.S. postage has the following values of stamps: 1, 10, 21, 34, 70, 100, 350, 1225, 1500 cents. Note that in this case the greedy algorithm does not work! Cashier’s algorithm: 140¢ = 100 + 34 + 1 + 1 + 1 + 1 + 1 + 1. Optimal: 140¢ = 70 + 70. In this case, we must use a dynamic programming approach.
+
+GRAPHICS
+
+Make the visuals cute and minimalist.
+
+Draw a cash register with little cabinets for each value of coin. Draw the coins using different sizes proportional to their values. Draw the queue of little customers (with random visuals). Each customer shows how much they are due in a thught bubble. the scenario is the same for the three scenes, but for the US denominations use the dollar coins, and for the Brazilian denomination use Real coins. change the colors of the scene to reflect differentiate between countries. For the third scene, make a US post office and draw stamps instead of coins.
+
+EDUCATIONAL
+
+Besides being a little quirk game, the main goal is to teach computer science students in the class of PROJETO E ANÁLISE DE ALGORITMOS I. 
+
+For this reason, add the option to play the game automatically using the Cashier’s algorithm, so that the student can see what is the result of the algorithm in the three scenarios. When the option to use the algorithm is active, the code of the algorithm should appear in the screen and the step by step of running for the current instance should be highlighted. Note that the Cashier’s algorithm will not give the optimal answer in the post office scene, but this is desired so that the students see that it does not work for all cases.
+
+Do the same as above but for the dynamic program algorithm that also solves the problem, including the stamp scene.
+
+UX EXPERIENCE
+
+There should be some tab or button with the instructions of the game.
+
+The game should support English and Brazilian Portuguese (add a little flag in the corner with a flag switch)
+
+EXTRA
+
+More features will be added later.
+
+CREDITS
+
+Keep space in the interface for the credits, License, github repo link, bibliography, etc.

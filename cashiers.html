@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+      <!-- Google Tag Manager -->
+      <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-T82L645Q');</script>
+      <!-- End Google Tag Manager -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashier's Algorithm Game</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%AA%99%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="cashiers/css/style.css">
+    <link rel="stylesheet" href="cashiers/css/custom_anim.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PG6S1LBB4Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    gtag('config', 'G-PG6S1LBB4Y');
+   </script>
+
+</head>
+
+<body>
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T82L645Q"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->  
+
+    <header>
+        <div class="header-content">
+            <h1>Cashier's Algorithm Game</h1>
+            <div class="controls">
+                <button id="lang-toggle" aria-label="Toggle Language">🇺🇸</button>
+                <button id="show-algo-btn" aria-label="Show Algorithm">⚙️</button>
+                <button id="info-btn" aria-label="Instructions">ℹ️</button>
+            </div>
+        </div>
+        <nav class="scene-selector">
+            <button class="scene-btn active" data-scene="us">US Dollar</button>
+            <button class="scene-btn" data-scene="stamps">Post Office</button>
+        </nav>
+    </header>
+
+    <div id="start-screen">
+        <div class="start-card">
+            <h2 id="start-title">Cashier's Algorithm Game</h2>
+            <p id="start-subtitle">Click Play to start serving customers.</p>
+            <button id="start-play-btn">Play</button>
+        </div>
+    </div>
+
+    <main id="game-container">
+        <!-- Educational Panel (Hidden by default or side-by-side) -->
+        <aside id="algo-panel" class="hidden">
+            <div class="algo-header">
+                <h2>Algorithm</h2>
+                <div class="algo-controls">
+                    <select id="algo-select">
+                        <option value="greedy">Greedy (Cashier's)</option>
+                        <option value="dp">Dynamic Programming</option>
+                    </select>
+                    <label id="algo-speed-label" for="algo-speed-select">Speed</label>
+                    <select id="algo-speed-select">
+                        <option value="0.5">0.5x</option>
+                        <option value="1" selected>1.0x</option>
+                        <option value="2">2.0x</option>
+                        <option value="5">5.0x</option>
+                        <option value="10">10.0x</option>
+                    </select>
+                    <button id="run-btn">Run</button>
+                    <button id="run-algo-btn">Auto-Run</button>
+                </div>
+            </div>
+            <div id="code-display">
+                <!-- Code code will be injected here -->
+            </div>
+            <div id="dp-visualization" class="hidden">
+                <div class="dp-vis-header">
+                    <strong>DP Table View (Informative Variables)</strong>
+                    <span id="dp-vis-context"></span>
+                </div>
+                <div class="dp-vis-meta">
+                    <span id="dp-current-i">amount_index: -</span>
+                    <span id="dp-current-test">candidate_check: -</span>
+                </div>
+                <div class="dp-vis-scroll">
+                    <table id="dp-vis-table">
+                        <tbody>
+                            <tr id="dp-vis-head-row"></tr>
+                            <tr id="dp-vis-dp-row"></tr>
+                            <tr id="dp-vis-coin-row"></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="algo-steps">
+                <!-- Step-by-step log -->
+            </div>
+        </aside>
+
+        <!-- Game Area -->
+        <section class="game-area">
+            <div class="game-topbar">
+                <div class="scene-meta">
+                    <h2 id="scene-title">US Dollar Counter</h2>
+                    <p id="scene-subtitle">Give exact change using the fewest pieces.</p>
+                </div>
+                <div class="score-pill">
+                    <div class="score-row">
+                        <span id="served-label">Customers Served</span>
+                        <strong id="served-count">0</strong>
+                    </div>
+                    <div class="score-row">
+                        <span id="mistake-label">Mistakes</span>
+                        <strong id="mistake-count">0</strong>
+                    </div>
+                    <div class="score-row">
+                        <span id="success-label">Success Rate</span>
+                        <strong id="success-rate">0%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="customer-area">
+                <div class="queue-container">
+                    <!-- Customers will be generated here -->
+                </div>
+                <div class="current-customer">
+                    <div class="thought-bubble" id="target-amount">Amount: <span id="amount-value">0</span></div>
+                    <div class="customer-sprite">Customer</div>
+                </div>
+            </div>
+
+            <div class="register-area">
+                <p class="register-label" id="register-label">Cash Register</p>
+                <div class="counter-top-row">
+                    <div class="register-display">
+                        <span id="current-total">0</span>
+                    </div>
+                    <aside class="drop-tray-panel" id="drop-tray-panel" aria-live="polite">
+                        <p class="drop-tray-label" id="drop-tray-label">Drop-Out Tray</p>
+                        <div class="drop-tray-items" id="drop-tray-items"></div>
+                        <p class="drop-tray-count"><span id="drop-tray-count">0/18</span></p>
+                    </aside>
+                </div>
+                <div class="coins-container" id="coins-rack">
+                    <!-- Coins buttons will be injected here -->
+                </div>
+            </div>
+
+            <div class="selected-coins" id="player-tray">
+                <!-- Selected coins appear here -->
+            </div>
+
+            <div id="status-message" class="status-message" aria-live="polite"></div>
+
+            <div class="action-row">
+                <button id="submit-btn">Give Change</button>
+                <button id="clear-btn">Clear Tray</button>
+                <button id="restart-btn">Restart Game</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="modal-overlay" class="hidden">
+        <div class="modal">
+            <h2 id="modal-title">Instructions</h2>
+            <div id="modal-content" class="modal-content">...</div>
+            <div class="modal-actions">
+                <button id="modal-secondary" class="hidden">Restart Game</button>
+                <button id="close-modal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p id="footer-text" class="footer-meta">
+            &copy; 2026
+            <a href="https://brunogrisci.github.io/" target="_blank" rel="noopener noreferrer">Prof. Bruno Iochins Grisci</a>
+            &mdash; Departamento de Inform&aacute;tica Te&oacute;rica,
+            <a href="https://www.inf.ufrgs.br/site/" target="_blank" rel="noopener noreferrer">Instituto de Inform&aacute;tica</a>,
+            <a href="https://www.ufrgs.br/site/" target="_blank" rel="noopener noreferrer">UFRGS</a>.
+        </p>
+        <p class="footer-meta">
+            Code on GitHub:
+            <a id="repo-link" href="https://github.com/BrunoGrisci/cashiers_algorithm_game" target="_blank" rel="noopener noreferrer">cashiers_algorithm_game</a>
+            &mdash; Licensed under
+            <a id="license-link" href="https://github.com/BrunoGrisci/cashiers_algorithm_game/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.
+        </p>
+        <p class="footer-meta">
+            Developed using GPT-5.3-Codex.
+        </p>
+        <div class="links">
+            <a href="#" id="credits-link">References</a>
+        </div>
+    </footer>
+
+    <script src="cashiers/js/data.js?v=2"></script>
+    <script src="cashiers/js/algorithms.js?v=2"></script>
+    <script src="cashiers/js/main.js?v=2"></script>
+</body>
+
+</html>
