@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-T82L645Q');</script>
+  <!-- End Google Tag Manager -->
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karatsuba Multiplication Visualizer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%E2%9D%8C%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="karatsuba/css/style.css">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PG6S1LBB4Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    gtag('config', 'G-PG6S1LBB4Y');
+   </script>
+
+</head>
+
+<body class="theme-light" data-lang="en">
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T82L645Q"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->  
+
+  <header>
+    <div class="header-title-wrap">
+      <h1 data-i18n="app_title">Karatsuba Multiplication Visualizer</h1>
+      <p data-i18n="app_subtitle">Compare classroom multiplication and Karatsuba step by step.</p>
+    </div>
+    <div class="header-controls">
+      <button id="multTableBtn" class="icon-btn" aria-label="Open multiplication table" title="Open multiplication table">
+        <span>🧮</span>
+      </button>
+      <button id="helpBtn" class="icon-btn help-btn" aria-label="Open quick help" title="Open quick help">
+        <span>?</span>
+      </button>
+      <button id="langToggle" class="icon-btn" aria-label="Toggle language">
+        <span id="langFlag">🇺🇸</span>
+      </button>
+      <button id="themeToggle" class="icon-btn" aria-label="Toggle theme">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <aside class="control-panel panel">
+      <button id="toggleControlsBtn" class="icon-btn panel-toggle-btn" aria-label="Toggle controls panel" title="Toggle controls panel">
+        <span id="controlsIcon">🧰</span>
+      </button>
+      <h2 data-i18n="controls_title">Controls</h2>
+
+      <div class="input-grid">
+        <label for="inputX" data-i18n="input_x_label">First number (x)</label>
+        <input id="inputX" inputmode="numeric" autocomplete="off" value="1234">
+
+        <label for="inputY" data-i18n="input_y_label">Second number (y)</label>
+        <input id="inputY" inputmode="numeric" autocomplete="off" value="5678">
+      </div>
+
+      <div class="row">
+        <label for="randomLength" class="inline-label" data-i18n="random_length_label">Random length</label>
+        <input id="randomLength" type="number" min="1" max="512" step="1" value="4" inputmode="numeric">
+      </div>
+
+      <div class="row">
+        <button id="randomBtn" class="secondary" data-i18n="random_btn">Random</button>
+        <button id="prepareBtn" class="secondary" data-i18n="prepare_btn">Prepare</button>
+      </div>
+
+      <div class="panel-note" id="paddingInfo" aria-live="polite"></div>
+
+      <div class="row run-row">
+        <button id="runStepBtn" data-i18n="run_step_btn">Run step</button>
+        <button id="autoRunBtn" data-i18n="auto_run_btn">Auto run</button>
+        <button id="runFullBtn" data-i18n="run_full_btn">Run full</button>
+      </div>
+
+      <div class="row speed-row">
+        <label for="speedSelect" data-i18n="speed_label">Speed</label>
+        <select id="speedSelect">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1.0x</option>
+          <option value="2">2.0x</option>
+          <option value="4">4.0x</option>
+          <option value="8">8.0x</option>
+        </select>
+        <button id="resetBtn" class="secondary" data-i18n="reset_btn">Reset steps</button>
+      </div>
+
+      <div class="operations-panel">
+        <div class="operations-total-line">
+          <span data-i18n="metric_total">Total operations (mul + sum)</span>
+          <strong id="totalCount">0</strong>
+        </div>
+        <div class="operations-mini-grid">
+          <div class="operations-mini-item">
+            <span data-i18n="metric_mul_small">Multiplications</span>
+            <strong id="mulCount">0</strong>
+          </div>
+          <div class="operations-mini-item">
+            <span data-i18n="metric_add_small">Sums</span>
+            <strong id="addCount">0</strong>
+          </div>
+          <div class="operations-mini-item">
+            <span data-i18n="metric_step">Current step</span>
+            <strong id="stepCount">0 / 0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-note" id="statusBar" aria-live="polite"></div>
+    </aside>
+
+    <div id="mainSplitter" class="splitter main-splitter" role="separator" aria-orientation="vertical" aria-label="Resize panels"></div>
+
+    <section class="main-panel panel">
+      <div class="tabs" role="tablist" aria-label="Algorithm tabs">
+        <button id="tabClassroom" class="tab-btn active" role="tab" aria-selected="true" data-tab="classroom" data-i18n="tab_classroom">Classroom algorithm</button>
+        <button id="tabKaratsuba" class="tab-btn" role="tab" aria-selected="false" data-tab="karatsuba" data-i18n="tab_karatsuba">Karatsuba algorithm</button>
+        <button id="tabComparison" class="tab-btn" role="tab" aria-selected="false" data-tab="comparison" data-i18n="tab_comparison">Operations comparison</button>
+      </div>
+
+      <div class="content-grid">
+        <div class="visual-panel-stack">
+          <article id="panelClassroom" class="tab-panel active" role="tabpanel">
+            <h3 data-i18n="digits_grid_title">Digits grid</h3>
+            <div id="classroomDigits" class="digits-area"></div>
+
+            <h3 data-i18n="powers_title">Rewriting as powers of 10</h3>
+            <div id="classroomPowers" class="formula-box"></div>
+
+            <h3 data-i18n="derivation_title">Derivation</h3>
+            <div id="classroomDerivation" class="derivation-area"></div>
+          </article>
+
+          <article id="panelKaratsuba" class="tab-panel" role="tabpanel">
+            <h3 data-i18n="digits_grid_title">Digits grid</h3>
+            <div id="karatsubaDigits" class="digits-area"></div>
+
+            <h3 data-i18n="powers_title">Rewriting as powers of 10</h3>
+            <div id="karatsubaPowers" class="formula-box"></div>
+
+            <h3 data-i18n="karatsuba_identity_title">Karatsuba identity</h3>
+            <div id="karatsubaIdentity" class="formula-box"></div>
+
+            <h3 data-i18n="karatsuba_tree_title">Recursive decomposition</h3>
+            <div id="karatsubaTree" class="tree-area"></div>
+          </article>
+
+          <article id="panelComparison" class="tab-panel" role="tabpanel">
+            <h3 data-i18n="comparison_title">Operations comparison</h3>
+            <div class="comparison-controls">
+              <div class="comparison-input-row">
+                <label for="comparisonRepeats" data-i18n="comparison_repeats_label">Repetitions</label>
+                <input id="comparisonRepeats" type="number" min="1" step="1" value="5" inputmode="numeric">
+                <button id="comparisonRunBtn" data-i18n="comparison_run_btn">Run comparison</button>
+                <button id="comparisonStopBtn" class="secondary" data-i18n="comparison_stop_btn">Stop</button>
+              </div>
+              <div id="comparisonProgress" class="panel-note" aria-live="polite"></div>
+              <div class="comparison-axis-row">
+                <label for="comparisonXMax" data-i18n="comparison_xmax_label">Max x length</label>
+                <select id="comparisonXMax">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="4">4</option>
+                  <option value="8">8</option>
+                  <option value="16">16</option>
+                  <option value="32">32</option>
+                  <option value="64">64</option>
+                  <option value="128">128</option>
+                  <option value="256" selected>256</option>
+                </select>
+                <label for="comparisonYZoom" data-i18n="comparison_yzoom_label">Y zoom</label>
+                <input id="comparisonYZoom" type="range" min="1" max="8" step="0.5" value="1">
+                <output id="comparisonYZoomValue">1.0x</output>
+              </div>
+              <div class="comparison-toggles">
+                <label class="toggle-chip">
+                  <input id="comparisonShowClassroom" type="checkbox" checked>
+                  <span data-i18n="comparison_toggle_classroom">Classroom curves</span>
+                </label>
+                <label class="toggle-chip">
+                  <input id="comparisonShowKaratsuba" type="checkbox" checked>
+                  <span data-i18n="comparison_toggle_karatsuba">Karatsuba curves</span>
+                </label>
+                <label class="toggle-chip">
+                  <input id="comparisonShowTotal" type="checkbox" checked>
+                  <span data-i18n="comparison_toggle_total">Total operations</span>
+                </label>
+                <label class="toggle-chip">
+                  <input id="comparisonShowMul" type="checkbox" checked>
+                  <span data-i18n="comparison_toggle_mul">Multiplications</span>
+                </label>
+                <label class="toggle-chip">
+                  <input id="comparisonShowAdd" type="checkbox" checked>
+                  <span data-i18n="comparison_toggle_add">Sums</span>
+                </label>
+                <label class="toggle-chip">
+                  <input id="comparisonShowTheoryN2" type="checkbox" checked>
+                  <span data-i18n="comparison_toggle_theory_n2">Theoretical n^2</span>
+                </label>
+                <label class="toggle-chip">
+                  <input id="comparisonShowTheoryN158" type="checkbox" checked>
+                  <span data-i18n="comparison_toggle_theory_n158">Theoretical n^1.58</span>
+                </label>
+              </div>
+            </div>
+
+            <h3 data-i18n="comparison_chart_title">Operation curves by input length</h3>
+            <div id="comparisonChartArea" class="comparison-chart-area">
+              <svg id="comparisonChartSvg" viewBox="0 0 880 320" role="img" aria-label="Operations comparison chart"></svg>
+              <div id="comparisonChartTooltip" class="chart-tooltip" hidden></div>
+            </div>
+
+            <h3 data-i18n="comparison_table_title">Average operations table</h3>
+            <div class="comparison-table-wrap">
+              <table id="comparisonTable" class="comparison-table"></table>
+            </div>
+          </article>
+        </div>
+
+        <div id="contentSplitter" class="splitter content-splitter" role="separator" aria-orientation="vertical" aria-label="Resize panels"></div>
+
+        <article class="code-panel">
+          <button id="toggleCodeBtn" class="icon-btn panel-toggle-btn" aria-label="Toggle algorithm and log panel" title="Toggle algorithm and log panel">
+            <span id="codeIcon">📜</span>
+          </button>
+          <h3 data-i18n="code_title">Algorithm code</h3>
+          <div id="codeDisplay" class="code-display"></div>
+
+          <h3 data-i18n="log_title">Step log</h3>
+          <div id="stepLog" class="step-log"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="multTableOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="multTableTitle" hidden>
+    <div class="modal-card panel">
+      <div class="modal-header">
+        <h2 id="multTableTitle" data-i18n="mult_table_title">Multiplication table (0 to 9)</h2>
+        <button id="multTableCloseBtn" class="secondary" data-i18n="close_btn">Close</button>
+      </div>
+      <div id="multTableGrid" class="mult-table-scroll"></div>
+    </div>
+  </div>
+
+  <div id="helpOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+    <div class="modal-card panel help-modal-card">
+      <div class="modal-header">
+        <h2 id="helpTitle" data-i18n="help_title">How to use this visualizer</h2>
+        <button id="helpCloseBtn" class="secondary" data-i18n="close_btn">Close</button>
+      </div>
+      <div class="help-content">
+        <p data-i18n="help_intro">This tool compares classroom multiplication and Karatsuba multiplication step by step.</p>
+        <p class="help-use-title" data-i18n="help_use_title">How to use:</p>
+        <ul class="help-list">
+          <li data-i18n="help_use_1">Enter two integers (they are padded automatically to power-of-two lengths when needed).</li>
+          <li data-i18n="help_use_2">Use Run step, Auto run, or Run full to control execution.</li>
+          <li data-i18n="help_use_3">Switch tabs to compare algorithms; counters show one-digit multiplications and sums so far.</li>
+          <li data-i18n="help_use_4">Use panel toggles to free space and inspect the decomposition tree.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="referencesOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="referencesTitle" hidden>
+    <div class="modal-card panel references-modal-card">
+      <div class="modal-header">
+        <h2 id="referencesTitle" data-i18n="references_title">References</h2>
+        <button id="referencesCloseBtn" class="secondary" data-i18n="close_btn">Close</button>
+      </div>
+      <div class="references-content">
+        <p class="ref-heading" data-i18n="references_main_heading">Main references</p>
+        <ol class="references-list">
+          <li>
+            <span data-i18n="references_main_1_author">Roughgarden, Tim.</span>
+            <em data-i18n="references_main_1_title">Algorithms Illuminated: Part 1: The Basics.</em>
+            <span data-i18n="references_main_1_pub">Soundlikeyourself Publishing, 2017.</span>
+          </li>
+          <li>
+            <span data-i18n="references_main_2_author">Kleinberg, Jon; Tardos, Éva.</span>
+            <em data-i18n="references_main_2_title">Algorithm Design.</em>
+            <span data-i18n="references_main_2_pub">Addison-Wesley (Pearson), 2005.</span>
+          </li>
+        </ol>
+
+        <p class="ref-heading" data-i18n="references_other_heading">Other references</p>
+        <ol class="references-list">
+          <li>
+            <span data-i18n="references_other_1_prefix">Youtube - </span>
+            <a href="https://www.youtube.com/watch?v=frT1UPiJUO0" target="_blank" rel="noopener noreferrer" data-i18n="references_other_1_title">The Fastest Multiplication Algorithm</a>
+          </li>
+          <li>
+            <span data-i18n="references_other_2_prefix">Youtube - </span>
+            <a href="https://www.youtube.com/watch?v=cCKOl5li6YM" target="_blank" rel="noopener noreferrer" data-i18n="references_other_2_title">How a Russian student invented a faster multiplication method</a>
+          </li>
+          <li>
+            <span data-i18n="references_other_3_prefix">Wikipedia - </span>
+            <a href="https://en.wikipedia.org/wiki/Ancient_Egyptian_multiplication" target="_blank" rel="noopener noreferrer" data-i18n="references_other_3_title">Ancient Egyptian multiplication</a>
+          </li>
+        </ol>
+
+        <p class="ref-heading" data-i18n="references_see_more_heading">See more algorithms</p>
+        <p>
+          <a href="https://github.com/BrunoGrisci/projeto-e-analise-de-algoritmos" target="_blank" rel="noopener noreferrer">https://github.com/BrunoGrisci/projeto-e-analise-de-algoritmos</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p id="footerCredits">
+      &copy; 2026
+      <a href="https://brunogrisci.github.io/" target="_blank" rel="noopener noreferrer">Prof. Bruno Iochins Grisci</a>
+      &mdash;
+      <a href="https://www.inf.ufrgs.br/site/" target="_blank" rel="noopener noreferrer">Instituto de Informática</a>,
+      <a href="https://www.ufrgs.br/site/" target="_blank" rel="noopener noreferrer">UFRGS</a>.
+    </p>
+    <p id="footerProject">
+      <span data-i18n="footer_repo">Project repository:</span>
+      <a href="https://github.com/BrunoGrisci/karatsuba_visualization" target="_blank" rel="noopener noreferrer">karatsuba_visualization</a>
+      &mdash;
+      <a href="https://github.com/BrunoGrisci/karatsuba_visualization/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" data-i18n="footer_license">MIT License</a>.
+    </p>
+    <p>
+      <a id="referencesLink" href="#" data-i18n="footer_references_link">References</a>
+    </p>
+    <p data-i18n="footer_ai">Developed with assistance from GPT-5 Codex.</p>
+  </footer>
+
+  <script src="karatsuba/js/i18n.js"></script>
+  <script src="karatsuba/js/algorithms.js"></script>
+  <script src="karatsuba/js/main.js"></script>
+</body>
+
+</html>
