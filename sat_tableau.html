@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cook-Levin Tableau</title>
+    <meta
+      name="description"
+      content="Interactive visualization of the Cook-Levin tableau construction for reducing nondeterministic Turing-machine computation to SAT."
+    >
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="assetsSAT_tableau/styles.css">
+  </head>
+  <body>
+    <header class="site-title">
+      <div>
+        <p class="eyebrow">NP-Completeness</p>
+        <h1>Cook-Levin Tableau Visualizer</h1>
+        <p class="subtitle">A minimal tableau view of how nondeterministic Turing-machine computations become SAT formulas.</p>
+      </div>
+    </header>
+
+    <main class="app" id="app">
+      <section class="workspace" aria-label="Cook-Levin tableau visualization">
+        <header class="bar">
+          <div class="button-row" aria-label="Views">
+            <button class="control" type="button" data-panel="machine">Machine</button>
+            <button class="control" type="button" data-panel="formula">Formula</button>
+            <button class="control" type="button" data-focus="assignment">True variables</button>
+            <button class="control" type="button" data-focus="cell">φcell</button>
+            <button class="control" type="button" data-focus="start">φstart</button>
+            <button class="control" type="button" data-focus="accept">φaccept</button>
+            <button class="control" type="button" data-focus="move">φmove</button>
+          </div>
+          <div class="button-row" aria-label="Accepting branch">
+            <button class="control" type="button" data-branch="even">branch ×2</button>
+            <button class="control" type="button" data-branch="three">branch ×3</button>
+            <button class="control icon-control" type="button" id="symbolAxisView" title="View down the symbol axis" aria-label="View down the symbol axis">2D</button>
+            <button class="control icon-control" type="button" id="resetView" title="Reset view" aria-label="Reset view">↺</button>
+          </div>
+        </header>
+
+        <div class="viewport" id="viewport">
+          <div class="scene" id="scene">
+            <div class="space" id="tableauSpace" aria-label="3D tableau variables"></div>
+          </div>
+        </div>
+
+        <div class="status-strip" id="statusStrip"></div>
+      </section>
+
+      <aside class="panel" id="sidePanel" aria-live="polite"></aside>
+      <svg class="connectors" id="connectors" aria-hidden="true"></svg>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        &copy; 2026
+        <a href="https://brunogrisci.github.io/" target="_blank" rel="noopener noreferrer">Prof. Bruno Iochins Grisci</a>
+        ·
+        <a href="https://www.inf.ufrgs.br/site/" target="_blank" rel="noopener noreferrer">Instituto de Informática</a>
+        ·
+        <a href="https://www.ufrgs.br/site/" target="_blank" rel="noopener noreferrer">UFRGS</a>
+      </p>
+      <p>
+        Project repository:
+        <a href="https://github.com/BrunoGrisci/SAT-tableau" target="_blank" rel="noopener noreferrer">SAT-tableau</a>
+        ·
+        <a href="https://github.com/BrunoGrisci/SAT-tableau/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+      </p>
+      <p>Developed with assistance from GPT-5.4.</p>
+    </footer>
+
+    <script src="assetsSAT_tableau/script.js"></script>
+  </body>
+</html>
