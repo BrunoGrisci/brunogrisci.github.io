@@ -62,6 +62,9 @@
             <button class="control" type="button" data-branch="three">branch ×3</button>
             <button class="control icon-control" type="button" id="symbolAxisView" title="View down the symbol axis" aria-label="View down the symbol axis">2D</button>
             <button class="control icon-control" type="button" id="resetView" title="Reset view" aria-label="Reset view">↺</button>
+            <button class="control theme-control" type="button" id="themeToggle" aria-pressed="false" title="Switch to dark mode">☾</button>
+            <button class="control lang-control" type="button" id="languageToggle" aria-pressed="false" title="Switch to Brazilian Portuguese" aria-label="Switch to Brazilian Portuguese">PT</button>
+            <button class="control reference-control" type="button" id="referencesButton">References</button>
           </div>
         </header>
 
@@ -74,9 +77,26 @@
         <div class="status-strip" id="statusStrip"></div>
       </section>
 
+      <div class="panel-resizer" id="panelResizer" role="separator" aria-orientation="vertical" aria-label="Resize side panel" tabindex="0"></div>
       <aside class="panel" id="sidePanel" aria-live="polite"></aside>
       <svg class="connectors" id="connectors" aria-hidden="true"></svg>
     </main>
+
+    <div class="modal-backdrop is-hidden" id="referencesModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="referencesModalTitle">
+      <section class="reference-window">
+        <header class="reference-window-bar">
+          <div>
+            <p class="reference-window-eyebrow" id="referencesModalEyebrow">References</p>
+            <h2 id="referencesModalTitle">Proof Sources</h2>
+          </div>
+          <button class="reference-close" type="button" id="referencesClose" aria-label="Close references">×</button>
+        </header>
+        <div class="reference-window-body">
+          <p class="reference-window-subtitle" id="referencesModalSubtitle"></p>
+          <div id="referencesModalText"></div>
+        </div>
+      </section>
+    </div>
 
     <footer class="site-footer">
       <p>
@@ -93,7 +113,7 @@
         ·
         <a href="https://github.com/BrunoGrisci/SAT-tableau/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
       </p>
-      <p>Developed with assistance from GPT-5.4.</p>
+      <p>Developed with assistance from Codex GPT-5.5.</p>
     </footer>
 
     <script src="assetsSAT_tableau/script.js"></script>

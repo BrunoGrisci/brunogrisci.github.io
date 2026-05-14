@@ -74,15 +74,285 @@ const TRANSITION_TEXT = {
 const app = document.getElementById("app");
 const viewport = document.getElementById("viewport");
 const tableauSpace = document.getElementById("tableauSpace");
+const panelResizer = document.getElementById("panelResizer");
 const sidePanel = document.getElementById("sidePanel");
 const connectors = document.getElementById("connectors");
 const statusStrip = document.getElementById("statusStrip");
+const themeToggle = document.getElementById("themeToggle");
+const languageToggle = document.getElementById("languageToggle");
+const referencesButton = document.getElementById("referencesButton");
+const referencesModal = document.getElementById("referencesModal");
+const referencesClose = document.getElementById("referencesClose");
+const referencesModalEyebrow = document.getElementById("referencesModalEyebrow");
+const referencesModalTitle = document.getElementById("referencesModalTitle");
+const referencesModalSubtitle = document.getElementById("referencesModalSubtitle");
+const referencesModalText = document.getElementById("referencesModalText");
+
+const THEME_STORAGE_KEY = "sat-tableau-theme";
+const LANGUAGE_STORAGE_KEY = "sat-tableau-language";
+const PANEL_WIDTH_STORAGE_KEY = "sat-tableau-panel-width";
+const PANEL_MIN_WIDTH = 300;
+const PANEL_MAX_WIDTH = 720;
+const WORKSPACE_MIN_WIDTH = 420;
+const PANEL_RESIZER_WIDTH = 8;
+
+function readStoredTheme() {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "clear";
+  } catch {
+    return "clear";
+  }
+}
+
+function writeStoredTheme(theme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // Theme persistence is optional when storage is unavailable.
+  }
+}
+
+function readStoredLanguage() {
+  try {
+    return localStorage.getItem(LANGUAGE_STORAGE_KEY) === "pt" ? "pt" : "en";
+  } catch {
+    return "en";
+  }
+}
+
+function writeStoredLanguage(language) {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  } catch {
+    // Language persistence is optional when storage is unavailable.
+  }
+}
+
+function readStoredPanelWidth() {
+  try {
+    const raw = localStorage.getItem(PANEL_WIDTH_STORAGE_KEY);
+    if (raw === null) {
+      return 420;
+    }
+    const stored = Number(raw);
+    return Number.isFinite(stored) ? stored : 420;
+  } catch {
+    return 420;
+  }
+}
+
+function writeStoredPanelWidth(width) {
+  try {
+    localStorage.setItem(PANEL_WIDTH_STORAGE_KEY, String(Math.round(width)));
+  } catch {
+    // Panel width persistence is optional when storage is unavailable.
+  }
+}
+
+const UI_TEXT = {
+  en: {
+    htmlLang: "en",
+    pageTitle: "Cook-Levin Tableau",
+    metaDescription: "Interactive visualization of the Cook-Levin tableau construction for reducing nondeterministic Turing-machine computation to SAT.",
+    eyebrow: "NP-Completeness",
+    heading: "Cook-Levin Tableau Visualizer",
+    subtitle: "A minimal tableau view of how nondeterministic Turing-machine computations become SAT formulas.",
+    workspaceAria: "Cook-Levin tableau visualization",
+    viewsAria: "Views",
+    branchAria: "Accepting branch",
+    tableauAria: "3D tableau variables",
+    panelLabels: { machine: "Machine", formula: "Formula" },
+    focusLabels: {
+      assignment: "True variables",
+      cell: "φcell",
+      start: "φstart",
+      accept: "φaccept",
+      move: "φmove"
+    },
+    branchLabels: { even: "branch ×2", three: "branch ×3" },
+    branchTitles: {
+      accepts: "This branch accepts the current input",
+      rejects: "This branch rejects the current input"
+    },
+    symbolAxisTitle: "View down the symbol axis",
+    resetTitle: "Reset view",
+    panelResizeTitle: "Resize side panel",
+    themeTitles: { toDark: "Switch to dark mode", toClear: "Switch to clear mode" },
+    language: { button: "PT", title: "Switch to Brazilian Portuguese" },
+    footerRepository: "Project repository:",
+    footerLicense: "MIT License",
+    footerCredit: "Developed with assistance from Codex GPT-5.5.",
+    references: {
+      button: "References",
+      title: "Show references",
+      close: "Close references",
+      eyebrow: "References",
+      heading: "Proof Sources",
+      subtitle: "Where the tableau construction used by this tool comes from.",
+      paragraphs: [
+        "The Cook-Levin theorem is due to Stephen Cook and Leonid Levin. It is the result that Boolean satisfiability is NP-complete: every nondeterministic polynomial-time computation can be encoded as a SAT instance.",
+        "The proof style visualized here is the tableau or computation-history construction. It follows the standard classroom presentation in which the accepting run of a nondeterministic Turing machine is represented by a grid of configurations, and the SAT formula checks cells, the start configuration, acceptance, and legal local moves.",
+        "The main theoretical source for this tool is Michael Sipser, Introduction to the Theory of Computation, especially the Cook-Levin proof and the use of local tableau windows.",
+        "Historically, Richard Karp's 1972 paper on reducibility and his list of 21 NP-complete problems made this reduction-centered view of NP-completeness central. This visualization follows that Karp/Sipser-style way of teaching the theorem rather than an optimized encoding.",
+        "A straightforward version of this tableau proof has an encoding size on the order of O(log(n^k)n^{3k}) for a polynomial-time computation bounded by n^k. Later refinements, appearing about seven years after the early NP-completeness papers, obtain O(n^k log(n^k)), which is quasilinear in the time bound. This tool intentionally does not develop that more technical proof."
+      ]
+    },
+    booleanTrue: "true",
+    booleanFalse: "false",
+    machineTitle: "NDTM for unary multiples of 2 or 3",
+    inputTitle: "Number of 1s in the unary input",
+    inputLabel: "1s",
+    machineIntro: (word) => `Input in this tableau: <strong>w = ${word}</strong>. The nondeterministic split is the transition stated in the reference: Π(q0, ©) has one branch for multiples of 2 and one branch for multiples of 3.`,
+    machineGraphAria: "Nondeterministic Turing machine graph",
+    transitionTitles: {
+      "q0-even": "nondeterministic branch",
+      "q0-three": "nondeterministic branch",
+      "even-step": "multiple of 2 scan",
+      "even-accept": "multiple of 2 accept",
+      "even-reject": "multiple of 2 reject",
+      "three-step": "multiple of 3 scan",
+      "three-accept": "multiple of 3 accept",
+      "three-reject": "multiple of 3 reject"
+    },
+    formulaTitle: "Formula extracted from the tableau",
+    formulaIntro: (set, word, rows, cols) => `C = ${set}. For w = ${word}, the tableau has m = ${rows} rows and ${cols} columns, with one Boolean variable x<sub>i,j,s</sub> for every row, column, and possible symbol.`,
+    cnfClauses: "CNF clauses",
+    unitClauses: "unit clauses",
+    disjunctionLiterals: "literals in one disjunction",
+    legalWindowChecks: "legal-window checks",
+    selectedAcceptingLiteral: (literal) => `Selected accepting literal: ${literal}.`,
+    branchFailsAccept: (branches) => `No qA appears in this displayed branch, so this branch fails φaccept. The full formula is satisfiable via branch ${branches.join(" or ")}.`,
+    noAcceptingBranch: "No qA appears in either branch, so φaccept cannot be satisfied for this input.",
+    selectedCoordinate: (coord, variable, count) => `Selected coordinate ${coord} has ${variable} true and the other ${count} symbol layers false.`,
+    selectedUnit: (variable, word) => `Selected unit: ${variable}. The first row is the initial configuration # q0 © ${word === "ε" ? "" : word} β #.`,
+    selectedWindow: (coord, formula) => `Selected window center ${coord}. Highlighted disjunct: ${formula}`,
+    statusFormula: {
+      satisfied: "selected branch satisfies φ",
+      otherBranch: "selected branch fails φaccept; formula satisfiable via other branch",
+      unsat: "φaccept false; formula unsatisfiable",
+      failed: "model check failed"
+    },
+    statusFocus: {
+      assignment: "all true variables",
+      acceptNone: "φaccept no qA"
+    },
+    status: {
+      tableau: "tableau",
+      symbolLayers: "symbol layers",
+      trueVariables: "true variables",
+      accepts: "accepts",
+      rejects: "rejects"
+    }
+  },
+  pt: {
+    htmlLang: "pt-BR",
+    pageTitle: "Tableau de Cook-Levin",
+    metaDescription: "Visualização interativa da construção do tableau de Cook-Levin para reduzir computações de máquinas de Turing não determinísticas a SAT.",
+    eyebrow: "NP-Completude",
+    heading: "Visualizador do Tableau de Cook-Levin",
+    subtitle: "Uma visão minimalista do tableau mostrando como computações de máquinas de Turing não determinísticas se tornam fórmulas SAT.",
+    workspaceAria: "Visualização do tableau de Cook-Levin",
+    viewsAria: "Visualizações",
+    branchAria: "Ramo de aceitação",
+    tableauAria: "Variáveis do tableau 3D",
+    panelLabels: { machine: "Máquina", formula: "Fórmula" },
+    focusLabels: {
+      assignment: "Variáveis verdadeiras",
+      cell: "φcell",
+      start: "φstart",
+      accept: "φaccept",
+      move: "φmove"
+    },
+    branchLabels: { even: "ramo ×2", three: "ramo ×3" },
+    branchTitles: {
+      accepts: "Este ramo aceita a entrada atual",
+      rejects: "Este ramo rejeita a entrada atual"
+    },
+    symbolAxisTitle: "Ver pelo eixo dos símbolos",
+    resetTitle: "Restaurar visão",
+    panelResizeTitle: "Redimensionar painel lateral",
+    themeTitles: { toDark: "Mudar para modo escuro", toClear: "Mudar para modo claro" },
+    language: { button: "EN", title: "Mudar para inglês" },
+    footerRepository: "Repositório do projeto:",
+    footerLicense: "Licença MIT",
+    footerCredit: "Desenvolvido com assistência do Codex GPT-5.5.",
+    references: {
+      button: "Referências",
+      title: "Mostrar referências",
+      close: "Fechar referências",
+      eyebrow: "Referências",
+      heading: "Fontes da Prova",
+      subtitle: "De onde vem a construção por tableau usada nesta ferramenta.",
+      paragraphs: [
+        "O teorema de Cook-Levin é devido a Stephen Cook e Leonid Levin. Ele estabelece que a satisfatibilidade booleana é NP-completa: toda computação não determinística em tempo polinomial pode ser codificada como uma instância de SAT.",
+        "O estilo de prova visualizado aqui é a construção por tableau, ou histórico de computação. Nele, a execução aceitante de uma máquina de Turing não determinística é representada por uma grade de configurações, e a fórmula SAT verifica células, configuração inicial, aceitação e movimentos locais legais.",
+        "A principal fonte teórica desta ferramenta é o livro Introduction to the Theory of Computation, de Michael Sipser, especialmente a prova de Cook-Levin e o uso de janelas locais do tableau.",
+        "Historicamente, o artigo de Richard Karp de 1972 sobre redutibilidade e sua lista dos 21 problemas NP-completos tornaram central essa visão da NP-completude baseada em reduções. Esta visualização segue essa forma Karp/Sipser de ensinar o teorema, não uma codificação otimizada.",
+        "Uma versão direta dessa prova por tableau tem codificação da ordem de O(log(n^k)n^{3k}) para uma computação em tempo polinomial limitada por n^k. Refinamentos posteriores, surgidos cerca de sete anos depois dos primeiros artigos sobre NP-completude, obtêm O(n^k log(n^k)), isto é, tempo quasilinear no limite de tempo. Esta ferramenta intencionalmente não desenvolve essa prova mais técnica."
+      ]
+    },
+    booleanTrue: "verdadeiro",
+    booleanFalse: "falso",
+    machineTitle: "MTND para múltiplos unários de 2 ou 3",
+    inputTitle: "Quantidade de 1s na entrada unária",
+    inputLabel: "1s",
+    machineIntro: (word) => `Entrada neste tableau: <strong>w = ${word}</strong>. A ramificação não determinística é a transição indicada na referência: Π(q0, ©) tem um ramo para múltiplos de 2 e um ramo para múltiplos de 3.`,
+    machineGraphAria: "Grafo da máquina de Turing não determinística",
+    transitionTitles: {
+      "q0-even": "ramo não determinístico",
+      "q0-three": "ramo não determinístico",
+      "even-step": "varredura de múltiplo de 2",
+      "even-accept": "aceitação por múltiplo de 2",
+      "even-reject": "rejeição por múltiplo de 2",
+      "three-step": "varredura de múltiplo de 3",
+      "three-accept": "aceitação por múltiplo de 3",
+      "three-reject": "rejeição por múltiplo de 3"
+    },
+    formulaTitle: "Fórmula extraída do tableau",
+    formulaIntro: (set, word, rows, cols) => `C = ${set}. Para w = ${word}, o tableau tem m = ${rows} linhas e ${cols} colunas, com uma variável booleana x<sub>i,j,s</sub> para cada linha, coluna e símbolo possível.`,
+    cnfClauses: "cláusulas CNF",
+    unitClauses: "cláusulas unitárias",
+    disjunctionLiterals: "literais em uma disjunção",
+    legalWindowChecks: "verificações de janelas legais",
+    selectedAcceptingLiteral: (literal) => `Literal de aceitação selecionado: ${literal}.`,
+    branchFailsAccept: (branches) => `Nenhum qA aparece neste ramo exibido, então este ramo falha em φaccept. A fórmula completa é satisfatível pelo ramo ${branches.join(" ou ")}.`,
+    noAcceptingBranch: "Nenhum qA aparece em qualquer ramo, então φaccept não pode ser satisfeita para esta entrada.",
+    selectedCoordinate: (coord, variable, count) => `A coordenada selecionada ${coord} tem ${variable} verdadeiro e as outras ${count} camadas de símbolos falsas.`,
+    selectedUnit: (variable, word) => `Unidade selecionada: ${variable}. A primeira linha é a configuração inicial # q0 © ${word === "ε" ? "" : word} β #.`,
+    selectedWindow: (coord, formula) => `Centro da janela selecionada ${coord}. Disjunto destacado: ${formula}`,
+    statusFormula: {
+      satisfied: "o ramo selecionado satisfaz φ",
+      otherBranch: "o ramo selecionado falha em φaccept; fórmula satisfatível por outro ramo",
+      unsat: "φaccept falsa; fórmula insatisfatível",
+      failed: "verificação do modelo falhou"
+    },
+    statusFocus: {
+      assignment: "todas as variáveis verdadeiras",
+      acceptNone: "φaccept sem qA"
+    },
+    status: {
+      tableau: "tableau",
+      symbolLayers: "camadas de símbolos",
+      trueVariables: "variáveis verdadeiras",
+      accepts: "aceita",
+      rejects: "rejeita"
+    }
+  }
+};
+
+function copy() {
+  return UI_TEXT[state?.language] ?? UI_TEXT.en;
+}
 
 const state = {
   inputLength: 6,
   branch: "even",
   focus: "assignment",
   panel: "machine",
+  theme: readStoredTheme(),
+  language: readStoredLanguage(),
+  panelWidth: readStoredPanelWidth(),
+  referencesOpen: false,
   trace: null,
   selectedCell: { row: 3, col: 4 },
   selectedStartCol: 1,
@@ -405,6 +675,7 @@ function focusInfo(row, col, symbolId, isTrue) {
 }
 
 function renderTableau() {
+  const text = copy();
   tableauSpace.innerHTML = "";
 
   tableauSpace.appendChild(createAxisLine(-0.8, -0.5, -0.7, (COLS - 1) * CELL + 60, "cols"));
@@ -446,7 +717,7 @@ function renderTableau() {
         variable.style.setProperty("--x", `${point.x}px`);
         variable.style.setProperty("--y", `${point.y}px`);
         variable.style.setProperty("--z", `${point.z}px`);
-        variable.title = `${variableName(row, col, symbol.id)} = ${isTrue ? "true" : "false"}`;
+        variable.title = `${variableName(row, col, symbol.id)} = ${isTrue ? text.booleanTrue : text.booleanFalse}`;
         variable.dataset.row = String(row);
         variable.dataset.col = String(col);
         variable.dataset.symbol = symbol.id;
@@ -482,17 +753,18 @@ function nodeClass(id, extra = "") {
 }
 
 function renderMachinePanel() {
+  const text = copy();
   sidePanel.innerHTML = `
-    <h1>MTND for unary multiples of 2 or 3</h1>
+    <h1>${text.machineTitle}</h1>
     <div class="machine-controls">
-      <label class="input-control" title="Number of 1s in the unary input">
-        <span>1s</span>
+      <label class="input-control" title="${text.inputTitle}">
+        <span>${text.inputLabel}</span>
         <input id="inputLength" type="number" min="${MIN_INPUT_LENGTH}" max="${MAX_INPUT_LENGTH}" value="${state.inputLength}" inputmode="numeric">
       </label>
     </div>
-    <p>Input in this tableau: <strong>w = ${inputWord()}</strong>. The nondeterministic split is the transition stated in the reference: Π(q0, ©) has one branch for multiples of 2 and one branch for multiples of 3.</p>
+    <p>${text.machineIntro(inputWord())}</p>
 
-    <svg class="machine-graph" viewBox="0 0 380 260" role="img" aria-label="Nondeterministic Turing machine graph">
+    <svg class="machine-graph" viewBox="0 0 380 260" role="img" aria-label="${text.machineGraphAria}">
       <defs>
         <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
           <path d="M0,0 L8,4 L0,8 Z" fill="#7e8ca2"></path>
@@ -540,14 +812,14 @@ function renderMachinePanel() {
     </svg>
 
     <section class="panel-section">
-      ${transitionCard("q0-even", "nondeterministic branch", TRANSITION_TEXT["q0-even"])}
-      ${transitionCard("q0-three", "nondeterministic branch", TRANSITION_TEXT["q0-three"])}
-      ${transitionCard("even-step", "multiple of 2 scan", TRANSITION_TEXT["even-step"])}
-      ${transitionCard("even-accept", "multiple of 2 accept", TRANSITION_TEXT["even-accept"])}
-      ${transitionCard("even-reject", "multiple of 2 reject", TRANSITION_TEXT["even-reject"])}
-      ${transitionCard("three-step", "multiple of 3 scan", TRANSITION_TEXT["three-step"])}
-      ${transitionCard("three-accept", "multiple of 3 accept", TRANSITION_TEXT["three-accept"])}
-      ${transitionCard("three-reject", "multiple of 3 reject", TRANSITION_TEXT["three-reject"])}
+      ${transitionCard("q0-even", text.transitionTitles["q0-even"], TRANSITION_TEXT["q0-even"])}
+      ${transitionCard("q0-three", text.transitionTitles["q0-three"], TRANSITION_TEXT["q0-three"])}
+      ${transitionCard("even-step", text.transitionTitles["even-step"], TRANSITION_TEXT["even-step"])}
+      ${transitionCard("even-accept", text.transitionTitles["even-accept"], TRANSITION_TEXT["even-accept"])}
+      ${transitionCard("even-reject", text.transitionTitles["even-reject"], TRANSITION_TEXT["even-reject"])}
+      ${transitionCard("three-step", text.transitionTitles["three-step"], TRANSITION_TEXT["three-step"])}
+      ${transitionCard("three-accept", text.transitionTitles["three-accept"], TRANSITION_TEXT["three-accept"])}
+      ${transitionCard("three-reject", text.transitionTitles["three-reject"], TRANSITION_TEXT["three-reject"])}
     </section>
   `;
 }
@@ -584,6 +856,7 @@ function startFormula() {
 }
 
 function renderFormulaPanel() {
+  const text = copy();
   const cSet = `{ ${SYMBOLS.map((symbol) => symbol.label).join(", ")} }`;
   const pairCount = (SYMBOLS.length * (SYMBOLS.length - 1)) / 2;
   const cellClauses = ROWS * COLS * (1 + pairCount);
@@ -594,35 +867,35 @@ function renderFormulaPanel() {
   const selectedBranchAccepts = traceAccepts(state.trace);
   const acceptedBy = acceptingBranches();
   const acceptNote = selectedBranchAccepts
-    ? `Selected accepting literal: ${variableName(state.selectedAccept.row, state.selectedAccept.col, "qA")}.`
+    ? text.selectedAcceptingLiteral(variableName(state.selectedAccept.row, state.selectedAccept.col, "qA"))
     : acceptedBy.length > 0
-      ? `No qA appears in this displayed branch, so this branch fails φaccept. The full formula is satisfiable via branch ${acceptedBy.map((branch) => branch === "even" ? "×2" : "×3").join(" or ")}.`
-      : "No qA appears in either branch, so φaccept cannot be satisfied for this input.";
+      ? text.branchFailsAccept(acceptedBy.map((branch) => branch === "even" ? "×2" : "×3"))
+      : text.noAcceptingBranch;
 
   sidePanel.innerHTML = `
-    <h1>Formula extracted from the tableau</h1>
-    <p>C = ${cSet}. For w = ${inputWord()}, the tableau has m = ${ROWS} rows and ${COLS} columns, with one Boolean variable x<sub>i,j,s</sub> for every row, column, and possible symbol.</p>
+    <h1>${text.formulaTitle}</h1>
+    <p>${text.formulaIntro(cSet, inputWord(), ROWS, COLS)}</p>
 
     ${formulaBlock(
       "cell",
       "φcell",
-      `${cellClauses} CNF clauses`,
+      `${cellClauses} ${text.cnfClauses}`,
       `φcell = ∧_{1≤i,j≤${ROWS}} [ (∨_{s∈C} x_{i,j,s}) ∧ ∧_{s<t∈C}(¬x_{i,j,s} ∨ ¬x_{i,j,t}) ]`,
-      `Selected coordinate ${coordText(state.selectedCell.row, state.selectedCell.col)} has ${variableName(state.selectedCell.row, state.selectedCell.col, selectedSymbol)} true and the other ${SYMBOLS.length - 1} symbol layers false.`
+      text.selectedCoordinate(coordText(state.selectedCell.row, state.selectedCell.col), variableName(state.selectedCell.row, state.selectedCell.col, selectedSymbol), SYMBOLS.length - 1)
     )}
 
     ${formulaBlock(
       "start",
       "φstart",
-      `${COLS} unit clauses`,
+      `${COLS} ${text.unitClauses}`,
       `φstart = ${startFormula()}`,
-      `Selected unit: ${variableName(0, state.selectedStartCol, startSymbol)}. The first row is the initial configuration # q0 © ${inputWord() === "ε" ? "" : inputWord()} β #.`
+      text.selectedUnit(variableName(0, state.selectedStartCol, startSymbol), inputWord())
     )}
 
     ${formulaBlock(
       "accept",
       "φaccept",
-      `${ROWS * COLS} literals in one disjunction`,
+      `${ROWS * COLS} ${text.disjunctionLiterals}`,
       `φaccept = ∨_{1≤i,j≤${ROWS}} x_{i,j,qA}`,
       acceptNote
     )}
@@ -630,9 +903,9 @@ function renderFormulaPanel() {
     ${formulaBlock(
       "move",
       "φmove",
-      `${moveWindows} legal-window checks`,
+      `${moveWindows} ${text.legalWindowChecks}`,
       `φmove = ∧_{2≤i≤${ROWS}, 2≤j≤${COLS - 1}} ∨_{(a1,...,a6)∈Legal(N)} (x_{i-1,j-1,a1} ∧ x_{i-1,j,a2} ∧ x_{i-1,j+1,a3} ∧ x_{i,j-1,a4} ∧ x_{i,j,a5} ∧ x_{i,j+1,a6})`,
-      `Selected window center ${coordText(selectedMove.bottomRow, selectedMove.centerCol)}. Highlighted disjunct: ${selectedWindowFormula()}`
+      text.selectedWindow(coordText(selectedMove.bottomRow, selectedMove.centerCol), selectedWindowFormula())
     )}
   `;
 }
@@ -660,33 +933,133 @@ function renderPanel() {
 }
 
 function renderStatus() {
+  const text = copy();
   const proof = verifyTrace(state.trace, state.branch);
-  const branchText = state.branch === "even" ? "×2 branch" : "×3 branch";
+  const branchText = text.branchLabels[state.branch];
   const selectedBranchAccepts = traceAccepts(state.trace);
   const acceptedBy = acceptingBranches();
   const formulaText = selectedBranchAccepts
-    ? "selected branch satisfies φ"
+    ? text.statusFormula.satisfied
     : acceptedBy.length > 0
-      ? "selected branch fails φaccept; formula satisfiable via other branch"
-      : "φaccept false; formula unsatisfiable";
+      ? text.statusFormula.otherBranch
+      : text.statusFormula.unsat;
   const selectedMove = selectedMoveWindow();
   const focusText = {
-    assignment: "all true variables",
+    assignment: text.statusFocus.assignment,
     cell: `φcell ${coordText(state.selectedCell.row, state.selectedCell.col)}`,
     start: `φstart j=${state.selectedStartCol + 1}`,
-    accept: state.selectedAccept ? `φaccept ${coordText(state.selectedAccept.row, state.selectedAccept.col)}` : "φaccept no qA",
+    accept: state.selectedAccept ? `φaccept ${coordText(state.selectedAccept.row, state.selectedAccept.col)}` : text.statusFocus.acceptNone,
     move: `φmove ${coordText(selectedMove.bottomRow, selectedMove.centerCol)}`
   }[state.focus];
 
   statusStrip.textContent = [
     `w = ${inputWord()}`,
-    `${ROWS}×${COLS} tableau`,
-    `${SYMBOLS.length} symbol layers`,
-    `${proof.trueCount} true variables`,
-    `${branchText} ${selectedBranchAccepts ? "accepts" : "rejects"}`,
+    `${ROWS}×${COLS} ${text.status.tableau}`,
+    `${SYMBOLS.length} ${text.status.symbolLayers}`,
+    `${proof.trueCount} ${text.status.trueVariables}`,
+    `${branchText} ${selectedBranchAccepts ? text.status.accepts : text.status.rejects}`,
     focusText,
-    proof.cellOk && proof.startOk && proof.moveOk && proof.shapeOk ? formulaText : "model check failed"
+    proof.cellOk && proof.startOk && proof.moveOk && proof.shapeOk ? formulaText : text.statusFormula.failed
   ].join(" · ");
+}
+
+function applyTheme() {
+  const text = copy();
+  const isDark = state.theme === "dark";
+  document.documentElement.dataset.theme = state.theme;
+
+  if (!themeToggle) {
+    return;
+  }
+
+  themeToggle.textContent = isDark ? "☀" : "☾";
+  themeToggle.title = isDark ? text.themeTitles.toClear : text.themeTitles.toDark;
+  themeToggle.setAttribute("aria-label", themeToggle.title);
+  themeToggle.setAttribute("aria-pressed", String(isDark));
+  themeToggle.classList.toggle("is-active", isDark);
+}
+
+function renderReferencesModal() {
+  const text = copy();
+
+  if (!referencesModal) {
+    return;
+  }
+
+  referencesModal.classList.toggle("is-hidden", !state.referencesOpen);
+  referencesModal.setAttribute("aria-hidden", String(!state.referencesOpen));
+  referencesModalEyebrow.textContent = text.references.eyebrow;
+  referencesModalTitle.textContent = text.references.heading;
+  referencesModalSubtitle.textContent = text.references.subtitle;
+  referencesModalText.innerHTML = text.references.paragraphs
+    .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+    .join("");
+  referencesClose.setAttribute("aria-label", text.references.close);
+}
+
+function openReferences() {
+  state.referencesOpen = true;
+  renderReferencesModal();
+  referencesClose?.focus();
+}
+
+function closeReferences() {
+  state.referencesOpen = false;
+  renderReferencesModal();
+  referencesButton?.focus();
+}
+
+function applyLanguage() {
+  const text = copy();
+  document.documentElement.lang = text.htmlLang;
+  document.title = text.pageTitle;
+  document.querySelector('meta[name="description"]')?.setAttribute("content", text.metaDescription);
+  document.querySelector(".eyebrow").textContent = text.eyebrow;
+  document.querySelector(".site-title h1").textContent = text.heading;
+  document.querySelector(".subtitle").textContent = text.subtitle;
+  document.querySelector(".workspace")?.setAttribute("aria-label", text.workspaceAria);
+  document.querySelectorAll(".bar .button-row")[0]?.setAttribute("aria-label", text.viewsAria);
+  document.querySelectorAll(".bar .button-row")[1]?.setAttribute("aria-label", text.branchAria);
+  tableauSpace?.setAttribute("aria-label", text.tableauAria);
+
+  document.querySelector('[data-panel="machine"]').textContent = text.panelLabels.machine;
+  document.querySelector('[data-panel="formula"]').textContent = text.panelLabels.formula;
+  Object.entries(text.focusLabels).forEach(([focus, label]) => {
+    document.querySelector(`[data-focus="${focus}"]`).textContent = label;
+  });
+
+  const symbolAxisButton = document.getElementById("symbolAxisView");
+  symbolAxisButton.title = text.symbolAxisTitle;
+  symbolAxisButton.setAttribute("aria-label", text.symbolAxisTitle);
+  const resetButton = document.getElementById("resetView");
+  resetButton.title = text.resetTitle;
+  resetButton.setAttribute("aria-label", text.resetTitle);
+  if (panelResizer) {
+    panelResizer.setAttribute("aria-label", text.panelResizeTitle);
+    panelResizer.title = text.panelResizeTitle;
+  }
+
+  if (languageToggle) {
+    languageToggle.textContent = text.language.button;
+    languageToggle.title = text.language.title;
+    languageToggle.setAttribute("aria-label", text.language.title);
+    languageToggle.setAttribute("aria-pressed", String(state.language === "pt"));
+  }
+  if (referencesButton) {
+    referencesButton.textContent = text.references.button;
+    referencesButton.title = text.references.title;
+    referencesButton.setAttribute("aria-label", text.references.title);
+  }
+  renderReferencesModal();
+
+  document.querySelector(".site-footer p:nth-child(2)").innerHTML = `
+        ${text.footerRepository}
+        <a href="https://github.com/BrunoGrisci/SAT-tableau" target="_blank" rel="noopener noreferrer">SAT-tableau</a>
+        ·
+        <a href="https://github.com/BrunoGrisci/SAT-tableau/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">${text.footerLicense}</a>
+      `;
+  document.querySelector(".site-footer p:nth-child(3)").textContent = text.footerCredit;
+  applyTheme();
 }
 
 function updateControls() {
@@ -694,13 +1067,14 @@ function updateControls() {
   if (inputLengthControl) {
     inputLengthControl.value = String(state.inputLength);
   }
+  applyLanguage();
   document.querySelectorAll("[data-focus]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.focus === state.focus);
   });
   document.querySelectorAll("[data-branch]").forEach((button) => {
     const accepts = branchAccepts(button.dataset.branch);
-    button.textContent = `${button.dataset.branch === "even" ? "branch ×2" : "branch ×3"} ${accepts ? "✓" : "×"}`;
-    button.title = accepts ? "This branch accepts the current input" : "This branch rejects the current input";
+    button.textContent = `${copy().branchLabels[button.dataset.branch]} ${accepts ? "✓" : "×"}`;
+    button.title = accepts ? copy().branchTitles.accepts : copy().branchTitles.rejects;
     button.classList.toggle("is-active", button.dataset.branch === state.branch);
     button.classList.toggle("is-accepting", accepts);
     button.classList.toggle("is-rejecting", !accepts);
@@ -713,6 +1087,8 @@ function updateControls() {
 function render() {
   updateTableauBounds();
   state.trace = buildTrace(state.branch);
+  app.classList.toggle("is-branch-rejecting", !traceAccepts(state.trace));
+  app.classList.toggle("is-flat-view", state.view.flattenDepth);
   ensureSelections();
   renderTableau();
   renderPanel();
@@ -802,6 +1178,30 @@ function applyView() {
   document.documentElement.style.setProperty("--pan-x", `${state.view.panX}px`);
   document.documentElement.style.setProperty("--pan-y", `${state.view.panY}px`);
   document.documentElement.style.setProperty("--perspective", state.view.perspective ?? "1400px");
+  window.requestAnimationFrame(drawConnectors);
+}
+
+function panelWidthBounds() {
+  const appWidth = app.getBoundingClientRect().width || window.innerWidth;
+  const viewportMax = Math.max(PANEL_MIN_WIDTH, appWidth - WORKSPACE_MIN_WIDTH - PANEL_RESIZER_WIDTH);
+  return {
+    min: PANEL_MIN_WIDTH,
+    max: Math.min(PANEL_MAX_WIDTH, viewportMax)
+  };
+}
+
+function applyPanelWidth(width = state.panelWidth) {
+  const bounds = panelWidthBounds();
+  const next = clamp(width, bounds.min, bounds.max);
+  state.panelWidth = next;
+  document.documentElement.style.setProperty("--panel-width", `${Math.round(next)}px`);
+
+  if (panelResizer) {
+    panelResizer.setAttribute("aria-valuemin", String(Math.round(bounds.min)));
+    panelResizer.setAttribute("aria-valuemax", String(Math.round(bounds.max)));
+    panelResizer.setAttribute("aria-valuenow", String(Math.round(next)));
+  }
+
   window.requestAnimationFrame(drawConnectors);
 }
 
@@ -1110,12 +1510,116 @@ document.querySelectorAll("[data-branch]").forEach((button) => {
   });
 });
 
+let panelResizeState = null;
+
+function finishPanelResize() {
+  if (!panelResizeState) {
+    return;
+  }
+
+  panelResizeState = null;
+  panelResizer?.classList.remove("is-dragging");
+  document.body.classList.remove("is-resizing-panel");
+  writeStoredPanelWidth(state.panelWidth);
+}
+
+panelResizer?.addEventListener("pointerdown", (event) => {
+  if (window.innerWidth <= 980) {
+    return;
+  }
+
+  panelResizeState = {
+    startX: event.clientX,
+    startWidth: state.panelWidth
+  };
+  panelResizer.classList.add("is-dragging");
+  document.body.classList.add("is-resizing-panel");
+  event.preventDefault();
+
+  try {
+    panelResizer.setPointerCapture(event.pointerId);
+  } catch {
+    // Synthetic pointer events used in automated checks do not own capture.
+  }
+});
+
+panelResizer?.addEventListener("pointermove", (event) => {
+  if (!panelResizeState) {
+    return;
+  }
+
+  const dx = event.clientX - panelResizeState.startX;
+  applyPanelWidth(panelResizeState.startWidth - dx);
+});
+
+panelResizer?.addEventListener("pointerup", (event) => {
+  try {
+    panelResizer.releasePointerCapture(event.pointerId);
+  } catch {
+    // Ignore missing capture for synthetic events.
+  }
+  finishPanelResize();
+});
+
+panelResizer?.addEventListener("pointercancel", finishPanelResize);
+
+panelResizer?.addEventListener("keydown", (event) => {
+  const step = event.shiftKey ? 60 : 24;
+  let next = null;
+
+  if (event.key === "ArrowLeft") {
+    next = state.panelWidth + step;
+  } else if (event.key === "ArrowRight") {
+    next = state.panelWidth - step;
+  } else if (event.key === "Home") {
+    next = panelWidthBounds().min;
+  } else if (event.key === "End") {
+    next = panelWidthBounds().max;
+  }
+
+  if (next === null) {
+    return;
+  }
+
+  event.preventDefault();
+  applyPanelWidth(next);
+  writeStoredPanelWidth(state.panelWidth);
+});
+
 document.getElementById("symbolAxisView").addEventListener("click", alignSymbolAxisView);
 document.getElementById("resetView").addEventListener("click", resetView);
-window.addEventListener("resize", drawConnectors);
+themeToggle?.addEventListener("click", () => {
+  state.theme = state.theme === "dark" ? "clear" : "dark";
+  writeStoredTheme(state.theme);
+  applyTheme();
+  window.requestAnimationFrame(drawConnectors);
+});
+languageToggle?.addEventListener("click", () => {
+  state.language = state.language === "pt" ? "en" : "pt";
+  writeStoredLanguage(state.language);
+  render();
+});
+referencesButton?.addEventListener("click", openReferences);
+referencesClose?.addEventListener("click", closeReferences);
+referencesModal?.addEventListener("click", (event) => {
+  if (event.target === referencesModal) {
+    closeReferences();
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && state.referencesOpen) {
+    closeReferences();
+  }
+});
+window.addEventListener("resize", () => {
+  applyPanelWidth(state.panelWidth);
+  drawConnectors();
+});
 sidePanel.addEventListener("scroll", drawConnectors);
 
 state.trace = buildTrace(state.branch);
 state.view = defaultView();
+applyPanelWidth(state.panelWidth);
+applyLanguage();
 applyView();
 render();
