@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T82L645Q');</script>
+    <!-- End Google Tag Manager -->
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NP-Complete Reductions</title>
+    <meta
+      name="description"
+      content="Interactive visualizations of classical polynomial-time reductions used in NP-completeness proofs."
+    >
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="assetsNPCompleteReductions/styles.css">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PG6S1LBB4Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+  gtag('config', 'G-PG6S1LBB4Y');
+    </script>
+
+  </head>
+  <body>
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T82L645Q"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->  
+
+    <header class="site-title">
+      <div class="title-copy">
+        <p class="eyebrow" id="eyebrow"></p>
+        <h1 id="pageTitle"></h1>
+        <p class="subtitle" id="subtitle"></p>
+      </div>
+      <div class="header-actions" aria-label="Application controls">
+        <button class="control theme-control" type="button" id="themeToggle" aria-pressed="false"></button>
+        <button class="control lang-control" type="button" id="languageToggle" aria-pressed="false"></button>
+      </div>
+    </header>
+
+    <main class="app" id="app">
+      <nav class="tabs" id="tabBar" aria-label="Reduction tabs"></nav>
+      <section class="workspace" id="workspace" aria-live="polite"></section>
+    </main>
+
+    <footer class="site-footer" id="footer"></footer>
+
+    <script src="assetsNPCompleteReductions/script.js"></script>
+  </body>
+</html>
