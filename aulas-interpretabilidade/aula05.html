@@ -2266,18 +2266,18 @@ Uma métrica melhor basta? Compare <strong>árvore</strong>, <strong>random fore
 <div id="dt-ensemble-comparison" role="figure" aria-label="Comparação de árvore, random forest e gradient boosting no Bike Sharing e nos pinguins">
   <div class="protocol"><b>Mesmo holdout e mesmos atributos</b><span><strong>DT</strong> D≤7</span><span><strong>RF</strong> 300 árvores, D≤7</span><span><strong>GB</strong> 200 árvores, D≤2, η=0,05 / 0,10</span></div>
   <div class="dataset-grid">
-    <section class="dataset bike">
+    <div class="dataset bike">
       <header><div><b>Bike Sharing</b><span>regressão · 243 dias de teste</span></div><em>MAE ↓</em></header>
       <div class="metric-rows"><div class="metric-row"><span class="model-tag" style="--model:#68737d">DT</span><span class="model-name">Árvore</span><div class="bar-track"><i style="width:100.0%;background:#68737d"></i></div><strong>812</strong><small>RMSE 1.051</small></div><div class="metric-row"><span class="model-tag" style="--model:#0072b2">RF</span><span class="model-name">Floresta</span><div class="bar-track"><i style="width:85.4%;background:#0072b2"></i></div><strong>693</strong><small>RMSE 906</small></div><div class="metric-row"><span class="model-tag" style="--model:#009e73">GB</span><span class="model-name">Boosting</span><div class="bar-track"><i style="width:79.7%;background:#009e73"></i></div><strong>647</strong><small>RMSE 860</small></div></div>
       <div class="global-test"><span>teste global</span><b>Friedman</b><strong>p &lt; 0,001</strong><small>erros absolutos dos mesmos dias</small></div>
       <div class="pair-title">Wilcoxon pareado + Holm</div><div class="pairs"><span class="pair sig"><b>DT ↔ RF</b><em>p<sub>Holm</sub> = 0,002</em></span><span class="pair sig"><b>DT ↔ GB</b><em>p<sub>Holm</sub> &lt; 0,001</em></span><span class="pair sig"><b>RF ↔ GB</b><em>p<sub>Holm</sub> = 0,008</em></span></div>
-    </section>
-    <section class="dataset penguins">
+    </div>
+    <div class="dataset penguins">
       <header><div><b>Pinguins: sexo</b><span>classificação · 111 casos de teste</span></div><em>acurácia ↑</em></header>
       <div class="metric-rows"><div class="metric-row"><span class="model-tag" style="--model:#68737d">DT</span><span class="model-name">Árvore</span><div class="bar-track"><i style="width:88.3%;background:#68737d"></i></div><strong>88,3%</strong><small>98/111 corretos</small></div><div class="metric-row"><span class="model-tag" style="--model:#0072b2">RF</span><span class="model-name">Floresta</span><div class="bar-track"><i style="width:93.7%;background:#0072b2"></i></div><strong>93,7%</strong><small>104/111 corretos</small></div><div class="metric-row"><span class="model-tag" style="--model:#009e73">GB</span><span class="model-name">Boosting</span><div class="bar-track"><i style="width:94.6%;background:#009e73"></i></div><strong>94,6%</strong><small>105/111 corretos</small></div></div>
       <div class="global-test"><span>teste global</span><b>Cochran Q</b><strong>p = 0,028</strong><small>acerto/erro dos mesmos pinguins</small></div>
       <div class="pair-title">McNemar exato + Holm</div><div class="pairs"><span class="pair ns"><b>DT ↔ RF</b><em>p<sub>Holm</sub> = 0,219</em><small>acertos exclusivos 2 × 8</small></span><span class="pair ns"><b>DT ↔ GB</b><em>p<sub>Holm</sub> = 0,196</em><small>acertos exclusivos 2 × 9</small></span><span class="pair ns"><b>RF ↔ GB</b><em>p<sub>Holm</sub> = 1,000</em><small>acertos exclusivos 1 × 2</small></span></div>
-    </section>
+    </div>
   </div>
   <div class="legend"><span><i class="sig-dot"></i> diferença apó correção (α=0,05)</span><span><i class="ns-dot"></i> sem evidência pareada suficiente</span></div>
 </div>
