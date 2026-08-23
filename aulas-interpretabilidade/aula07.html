@@ -3208,6 +3208,14 @@ Valores da implementação oficial: <a href="https://github.com/marcotcr/lime/bl
 Problema central discutido por <a href="https://christophm.github.io/interpretable-ml-book/lime.html#limitations">Molnar</a> e demonstrado nos vídeos <a href="https://www.youtube.com/watch?v=d6j6bofhj2M">An introduction to LIME</a> e <a href="https://www.youtube.com/watch?v=dQ_jvRkzN1Q">Applying LIME with Python</a>.
 </p>
 </section>
+<section id="atacando-lime" class="slide level2">
+<h2>Atacando LIME</h2>
+<ul>
+<li class="fragment">O fato de métodos agnósticos funcionarem para qualquer modelo sem precisarem de acesso é uma vantagem mas também uma vulnerabilidade.</li>
+<li class="fragment">Imagine que você deseja enganar um sistema de explicações de decisões.</li>
+<li class="fragment">Uma estratégia é fornecer o modelo certo na hora certa.</li>
+</ul>
+</section>
 <section id="manipulação-deliberada-scaffolding" class="slide level2 smaller lime-slide">
 <h2>Manipulação deliberada: <em>scaffolding</em></h2>
 <p class="lime-lead">
