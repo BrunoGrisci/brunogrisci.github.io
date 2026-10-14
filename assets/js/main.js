@@ -29,6 +29,9 @@
 			}, 100);
 		});
 
+	// Copyright year.
+		$('.copyright-year').text(new Date().getFullYear());
+
 	// Tweaks/fixes.
 
 		// Polyfill: Object fit.
