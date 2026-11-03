@@ -3364,3 +3364,32 @@ summary {
 summary::-webkit-details-marker {
   display: none;
 }
+
+/* Profile icons (sidebar and contact) */
+
+ul.icons.profile-icons {
+	display: grid;
+	grid-template-columns: repeat(6, 25px);
+	gap: 0 1em;
+	justify-content: center;
+}
+
+	#main ul.icons.profile-icons {
+		justify-content: start;
+	}
+
+	ul.icons.profile-icons li {
+		padding: 0;
+	}
+
+	ul.icons.profile-icons a {
+		border-bottom: 0;
+	}
+
+@media screen and (max-width: 736px) {
+
+	ul.icons.profile-icons {
+		column-gap: 0.75em;
+	}
+
+}
